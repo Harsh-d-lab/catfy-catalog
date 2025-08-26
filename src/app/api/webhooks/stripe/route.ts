@@ -90,6 +90,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   try {
     // Get the subscription details
+    if (!stripe) {
+      console.error('Stripe is not configured')
+      return
+    }
     const stripeSubscription = await stripe.subscriptions.retrieve(subscription as string)
     
     // Map Stripe status to our enum

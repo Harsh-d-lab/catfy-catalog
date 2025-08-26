@@ -1,13 +1,16 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set')
+// Handle missing STRIPE_SECRET_KEY gracefully during build time
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+
+if (!stripeSecretKey && process.env.NODE_ENV !== 'development') {
+  console.warn('STRIPE_SECRET_KEY is not set. Stripe functionality will be disabled.')
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
   typescript: true,
-})
+}) : null
 
 export const STRIPE_PLANS = {
   monthly: {
@@ -37,6 +40,9 @@ export async function createCustomer({
   name?: string
   metadata?: Record<string, string>
 }) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
   return await stripe.customers.create({
     email,
     name,
@@ -59,6 +65,10 @@ export async function createCheckoutSession({
   couponId?: string
   metadata?: Record<string, string>
 }) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
+  
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -119,10 +129,16 @@ export async function createSubscription({
     subscriptionParams.coupon = couponId
   }
 
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
   return await stripe.subscriptions.create(subscriptionParams)
 }
 
 export async function cancelSubscription(subscriptionId: string, atPeriodEnd = true) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
   if (atPeriodEnd) {
     return await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true,
@@ -141,8 +157,12 @@ export async function updateSubscription({
   priceId?: string
   couponId?: string
 }) {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
   
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
   const updateParams: Stripe.SubscriptionUpdateParams = {}
 
   if (priceId) {
@@ -180,6 +200,10 @@ export async function createStripeCoupon({
   maxRedemptions?: number
   redeemBy?: number
 }) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
+  
   const couponParams: Stripe.CouponCreateParams = {
     id,
     name,
@@ -205,6 +229,10 @@ export async function createStripeCoupon({
 }
 
 export async function getCustomerPortalUrl(customerId: string, returnUrl: string) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
+  
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -218,5 +246,8 @@ export function constructWebhookEvent(
   signature: string,
   secret: string
 ) {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY.')
+  }
   return stripe.webhooks.constructEvent(payload, signature, secret)
 }

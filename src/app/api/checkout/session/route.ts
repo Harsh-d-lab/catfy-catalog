@@ -62,6 +62,13 @@ export async function POST(request: NextRequest) {
         const couponResult = await couponValidation.json()
         if (couponResult.valid) {
           // Create Stripe coupon if it doesn't exist
+          if (!stripe) {
+            return NextResponse.json(
+              { error: 'Stripe is not configured' },
+              { status: 500 }
+            )
+          }
+          
           try {
             await stripe.coupons.retrieve(couponCode.toUpperCase())
             couponId = couponCode.toUpperCase()
