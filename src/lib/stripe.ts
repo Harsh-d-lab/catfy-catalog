@@ -7,6 +7,7 @@ if (!stripeSecretKey && process.env.NODE_ENV !== 'development') {
   console.warn('STRIPE_SECRET_KEY is not set. Stripe functionality will be disabled.')
 }
 
+
 export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
   typescript: true,
