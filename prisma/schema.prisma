@@ -1,0 +1,367 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User profile that mirrors Supabase auth
+model Profile {
+  id          String      @id // Supabase auth user ID (no default, set manually)
+  email       String
+  fullName    String?
+  firstName   String?
+  lastName    String?
+  avatarUrl   String?
+  accountType AccountType @default(INDIVIDUAL)
+  companyName String?
+  phone       String?
+  website     String?
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  postalCode       String?
+  stripeCustomerId String? // Stripe customer ID
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  catalogues    Catalogue[]
+  subscriptions Subscription[]
+  couponUsages  CouponUsage[]
+  exports       Export[]
+  analytics     Analytics[]
+
+  @@map("profiles")
+}
+
+enum AccountType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+// Catalogue model
+model Catalogue {
+  id          String           @id @default(uuid())
+  name        String
+  description String?
+  theme       String           @default("modern")
+  isPublic    Boolean          @default(false)
+  slug        String?          @unique
+  status      CatalogueStatus  @default(DRAFT)
+  settings    Json?            // Theme customization, branding, etc.
+  viewCount   Int              @default(0)
+  exportCount Int              @default(0)
+  customDomain String?
+  seoTitle    String?
+  seoDescription String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  products   Product[]
+  categories Category[]
+  exports    Export[]
+  analytics  Analytics[]
+
+  @@map("catalogues")
+}
+
+enum CatalogueStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Product model
+model Product {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  price        Decimal? @db.Decimal(10, 2)
+  priceDisplay String   @default("show") // show, hide, contact
+  currency     String   @default("USD")
+  sku          String?
+  images       String[] // Array of Supabase storage URLs
+  tags         String[]
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  catalogueId String
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("products")
+}
+
+// Category model for organizing products
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  color       String?  // Hex color for UI
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  catalogueId String
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+
+  products Product[]
+
+  @@map("categories")
+}
+
+// Coupon model for discounts
+model Coupon {
+  id                    String              @id @default(uuid())
+  code                  String              @unique
+  name                  String
+  description           String?
+  type                  CouponType
+  value                 Decimal             @db.Decimal(10, 2) // Percentage or fixed amount
+  currency              String              @default("USD")
+  isActive              Boolean             @default(true)
+  isPublic              Boolean             @default(false) // Whether to show remaining uses publicly
+  limitTotal            Int?                // Total usage limit
+  limitPerCustomer      Int                 @default(1)
+  usedCount             Int                 @default(0)
+  allowedBillingCycles  BillingCycle[]
+  validFrom             DateTime            @default(now())
+  validUntil            DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  // Relations
+  usages        CouponUsage[]
+  subscriptions Subscription[]
+
+  @@map("coupons")
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// Coupon usage tracking
+model CouponUsage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  usedAt    DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  // Relations
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@unique([couponId, profileId]) // One coupon per customer
+  @@map("coupon_usages")
+}
+
+// Subscription model for Stripe integration
+model Subscription {
+  id                 String             @id @default(uuid())
+  stripeSubscriptionId String?          @unique
+  stripeCustomerId   String?
+  stripePriceId      String?
+  plan               SubscriptionPlan   @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  billingCycle       BillingCycle       @default(MONTHLY)
+  amount             Decimal            @db.Decimal(10, 2)
+  currency           String             @default("USD")
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  trialEnd           DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+  canceledAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  // Relations
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  couponId String?
+  coupon   Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+
+  couponUsages CouponUsage[]
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionPlan {
+  FREE
+  STANDARD
+  PROFESSIONAL
+  BUSINESS
+}
+
+// Plan features and limitations
+model PlanFeature {
+  id                    String           @id @default(uuid())
+  plan                  SubscriptionPlan @unique
+  name                  String
+  description           String?
+  monthlyPrice          Decimal          @db.Decimal(10, 2)
+  yearlyPrice           Decimal          @db.Decimal(10, 2)
+  currency              String           @default("USD")
+  
+  // Feature limitations
+  maxCatalogues         Int              @default(-1) // -1 means unlimited
+  maxProductsPerCatalogue Int            @default(-1)
+  maxCategories         Int              @default(-1)
+  maxExportsPerMonth    Int              @default(-1)
+  maxStorageGB          Int              @default(-1)
+  
+  // Feature flags
+  hasCustomDomain       Boolean          @default(false)
+  hasAdvancedAnalytics  Boolean          @default(false)
+  hasWhiteLabel         Boolean          @default(false)
+  hasPrioritySupport    Boolean          @default(false)
+  hasAPIAccess          Boolean          @default(false)
+  hasCustomBranding     Boolean          @default(false)
+  hasAdvancedExports    Boolean          @default(false)
+  hasTeamCollaboration  Boolean          @default(false)
+  hasAdvancedSEO        Boolean          @default(false)
+  hasCustomThemes       Boolean          @default(false)
+  
+  isActive              Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@map("plan_features")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+}
+
+// Export tracking for PDF generation
+model Export {
+  id          String     @id @default(uuid())
+  type        ExportType @default(PDF)
+  status      ExportStatus @default(PENDING)
+  fileUrl     String?    // Supabase storage URL
+  filePath    String?    // File path in storage
+  fileName    String?
+  fileSize    Int?       // File size in bytes
+  metadata    Json?      // Export metadata (theme, format, orientation, etc.)
+  error       String?    // Error message if failed
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  completedAt DateTime?
+
+  // Relations
+  profileId   String
+  profile     Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  catalogueId String
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+
+  @@map("exports")
+}
+
+enum ExportType {
+  PDF
+  HTML
+  JSON
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Analytics model for tracking usage
+model Analytics {
+  id        String        @id @default(uuid())
+  event     AnalyticsEvent
+  metadata  Json?         // Event-specific data
+  ipAddress String?
+  userAgent String?
+  country   String?
+  createdAt DateTime      @default(now())
+
+  // Relations
+  profileId   String?
+  profile     Profile? @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  
+  catalogueId String?
+  catalogue   Catalogue? @relation(fields: [catalogueId], references: [id], onDelete: SetNull)
+  
+  @@map("analytics")
+}
+
+enum AnalyticsEvent {
+  CATALOGUE_CREATED
+  CATALOGUE_PUBLISHED
+  PRODUCT_ADDED
+  PDF_EXPORT
+  EXPORT_GENERATED
+  COUPON_USED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_CANCELED
+  PAGE_VIEW
+  USER_SIGNUP
+  USER_LOGIN
+}
+
+// Webhook events for external integrations
+model WebhookEvent {
+  id          String            @id @default(uuid())
+  source      WebhookSource
+  eventType   String
+  data        Json
+  processed   Boolean           @default(false)
+  error       String?
+  attempts    Int               @default(0)
+  maxAttempts Int               @default(3)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  processedAt DateTime?
+
+  @@map("webhook_events")
+}
+
+enum WebhookSource {
+  STRIPE
+  SUPABASE
+  INTERNAL
+}
