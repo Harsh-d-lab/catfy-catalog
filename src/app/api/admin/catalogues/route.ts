@@ -4,6 +4,10 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { ADMIN_EMAILS } from '@/lib/admin-config'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     // Check for admin session cookies first
