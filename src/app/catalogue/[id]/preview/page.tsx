@@ -201,7 +201,7 @@ export default function CataloguePreviewPage() {
         settings: {
           ...(catalogue.settings as object || {}),
           customColors: colors
-        }
+        } as any
       })
     }
   }
@@ -235,7 +235,7 @@ export default function CataloguePreviewPage() {
         settings: {
           ...(catalogue.settings as object || {}),
           fontCustomization
-        }
+        } as any
       })
     }
   }
@@ -249,7 +249,7 @@ export default function CataloguePreviewPage() {
         settings: {
           ...(catalogue.settings as object || {}),
           spacingCustomization
-        }
+        } as any
       })
     }
   }
@@ -263,7 +263,7 @@ export default function CataloguePreviewPage() {
         settings: {
           ...(catalogue.settings as object || {}),
           advancedStyles
-        }
+        } as any
       })
     }
   }
