@@ -78,6 +78,19 @@ export function CatalogCover({
       className="w-full max-w-4xl mx-auto relative"
       style={{ backgroundColor: customColors?.backgroundColors.cover }}
     >
+      {/* Cover Image Background */}
+      {(catalogue.settings as any)?.mediaAssets?.coverImageUrl && (
+        <div className="absolute inset-0 overflow-hidden">
+          <Image 
+            src={(catalogue.settings as any).mediaAssets.coverImageUrl}
+            alt="Cover Image"
+            fill
+            className="object-cover opacity-20"
+            priority
+          />
+        </div>
+      )}
+      
       {/* Background Design Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
@@ -107,10 +120,10 @@ export function CatalogCover({
             marginBottom: `${spacingCustomization?.margin?.elements || 48}px`
           }}
         >
-          {profile.avatarUrl ? (
+          {(catalogue.settings as any)?.mediaAssets?.logoUrl || profile.avatarUrl ? (
             <div className="w-24 h-24 mx-auto mb-6 rounded-lg overflow-hidden shadow-lg">
               <Image 
-                src={profile.avatarUrl} 
+                src={(catalogue.settings as any)?.mediaAssets?.logoUrl || profile.avatarUrl} 
                 alt={profile.companyName || 'Company Logo'}
                 width={96}
                 height={96}
@@ -177,8 +190,8 @@ export function CatalogCover({
               style={{ 
                 color: customColors?.textColors.title || '#1f2937',
                 fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
-                fontSize: `${fontCustomization?.fontSize.title || 24}px`,
-                fontWeight: fontCustomization?.fontWeight.title || '600'
+                fontSize: `${fontCustomization?.fontSize?.title || 24}px`,
+                fontWeight: fontCustomization?.fontWeight?.title || '600'
               }}
               onClick={() => handleFieldEdit('name')}
             >
@@ -224,8 +237,8 @@ export function CatalogCover({
               style={{ 
                 color: customColors?.textColors.description || '#6b7280',
                 fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
-                fontSize: `${fontCustomization?.fontSize.description || 16}px`,
-                fontWeight: fontCustomization?.fontWeight.description || '400'
+                fontSize: `${fontCustomization?.fontSize?.description || 16}px`,
+                fontWeight: fontCustomization?.fontWeight?.description || '400'
               }}
               onClick={() => handleFieldEdit('description')}
             >
@@ -254,8 +267,8 @@ export function CatalogCover({
             style={{ 
               color: customColors?.textColors.companyName || '#374151',
               fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
-              fontSize: `${fontCustomization?.fontSize.companyName || 20}px`,
-              fontWeight: fontCustomization?.fontWeight.companyName || '600'
+              fontSize: `${fontCustomization?.fontSize?.companyName || 20}px`,
+              fontWeight: fontCustomization?.fontWeight?.companyName || '600'
             }}
           >
             by {profile.companyName || profile.fullName || 'Your Company'}

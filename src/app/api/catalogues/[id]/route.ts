@@ -174,14 +174,7 @@ export async function GET(
         description: catalogue.description,
         theme: catalogue.theme,
         isPublic: catalogue.isPublic,
-        settings: {
-          ...(catalogue.settings as Record<string, any> || {}),
-          contactInfo: (catalogue.settings as any)?.contactInfo || {
-            email: null,
-            phone: null,
-            website: null,
-          },
-        },
+        settings: catalogue.settings as Record<string, any> || {},
         products: catalogue.products.map(product => ({
           id: product.id,
           name: product.name,
@@ -269,22 +262,29 @@ export async function PUT(
     }
 
     const body = await request.json()
+    
+    console.log('PUT request received for catalogue:', params.id)
+    console.log('Request body:', body)
+    console.log('Settings in request:', body.settings)
+    
     const validatedData = updateCatalogueSchema.parse(body)
+    console.log('Validated data:', validatedData)
+
+    console.log('Existing catalogue settings:', existingCatalogue.settings)
 
     // Merge settings if provided
-    let updatedSettings = existingCatalogue.settings
-    if (validatedData.settings) {
-      updatedSettings = {
-        ...(existingCatalogue.settings as any),
-        ...validatedData.settings,
-      }
-    }
+    const updatedSettings = validatedData.settings 
+      ? { ...existingCatalogue.settings as any, ...validatedData.settings }
+      : existingCatalogue.settings
 
-    const catalogue = await prisma.catalogue.update({
+    console.log('Updated settings to save:', updatedSettings)
+
+    const updatedCatalogue = await prisma.catalogue.update({
       where: { id: params.id },
       data: {
         ...validatedData,
-        settings: updatedSettings as any,
+        settings: updatedSettings,
+        updatedAt: new Date()
       },
       include: {
         _count: {
@@ -296,11 +296,14 @@ export async function PUT(
       },
     }) as any
 
+    console.log('Catalogue updated successfully:', updatedCatalogue.id)
+    console.log('Final settings saved:', updatedCatalogue.settings)
+
     // Record analytics
     await prisma.analytics.create({
       data: {
         profileId: profile.id,
-        catalogueId: catalogue.id,
+        catalogueId: updatedCatalogue.id,
         event: 'PAGE_VIEW',
         metadata: {
           action: 'catalogue_updated',
@@ -312,16 +315,16 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       catalogue: {
-        id: catalogue.id,
-        name: catalogue.name,
-        description: catalogue.description,
-        theme: catalogue.theme,
-        isPublic: catalogue.isPublic,
-        settings: catalogue.settings,
-        productCount: catalogue._count.products,
-        categoryCount: catalogue._count.categories,
-        createdAt: catalogue.createdAt,
-        updatedAt: catalogue.updatedAt,
+        id: updatedCatalogue.id,
+        name: updatedCatalogue.name,
+        description: updatedCatalogue.description,
+        theme: updatedCatalogue.theme,
+        isPublic: updatedCatalogue.isPublic,
+        settings: updatedCatalogue.settings,
+        productCount: updatedCatalogue._count.products,
+        categoryCount: updatedCatalogue._count.categories,
+        createdAt: updatedCatalogue.createdAt,
+        updatedAt: updatedCatalogue.updatedAt,
       },
     })
   } catch (error) {

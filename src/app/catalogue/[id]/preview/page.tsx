@@ -409,7 +409,7 @@ export default function CataloguePreviewPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Admin Header */}
-      <div className="bg-white border-b shadow-sm print:hidden">
+      <div className="bg-white border-b shadow-sm print:hidden ">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -525,7 +525,7 @@ export default function CataloguePreviewPage() {
         
         {/* Right Sidebar - StyleCustomizer */}
         {isEditMode && (
-          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl border-l border-gray-200 z-50 overflow-y-auto">
+          <div className="fixed right-0 top-[69px] h-[calc(100vh-69px)] w-96 bg-white shadow-xl border-l border-gray-200 z-10 overflow-y-auto">
             <div className="p-4">
               <StyleCustomizer
                 isVisible={true}

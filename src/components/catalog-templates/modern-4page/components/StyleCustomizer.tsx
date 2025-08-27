@@ -327,8 +327,8 @@ export function StyleCustomizer({
 
   return (
     <div className="h-full">
-      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
-        <div className="flex items-center justify-between mb-4">
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 pb-4 z-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold text-gray-800">Style Customizer</h2>
@@ -488,9 +488,9 @@ export function StyleCustomizer({
               
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs text-gray-600">Title: {fontCustomization.fontSize.title}px</Label>
+                  <Label className="text-xs text-gray-600">Title: {fontCustomization.fontSize?.title || 24}px</Label>
                   <Slider
-                    value={[fontCustomization.fontSize.title]}
+                    value={[fontCustomization.fontSize?.title || 24]}
                     onValueChange={([value]) => handleFontChange('fontSize.title', value)}
                     min={16}
                     max={48}
@@ -499,9 +499,9 @@ export function StyleCustomizer({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-600">Company Name: {fontCustomization.fontSize.companyName}px</Label>
+                  <Label className="text-xs text-gray-600">Company Name: {fontCustomization.fontSize?.companyName || 20}px</Label>
                   <Slider
-                    value={[fontCustomization.fontSize.companyName]}
+                    value={[fontCustomization.fontSize?.companyName || 20]}
                     onValueChange={([value]) => handleFontChange('fontSize.companyName', value)}
                     min={14}
                     max={32}
@@ -510,9 +510,9 @@ export function StyleCustomizer({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-600">Product Name: {fontCustomization.fontSize.productName}px</Label>
+                  <Label className="text-xs text-gray-600">Product Name: {fontCustomization.fontSize?.productName || 18}px</Label>
                   <Slider
-                    value={[fontCustomization.fontSize.productName]}
+                    value={[fontCustomization.fontSize?.productName || 18]}
                     onValueChange={([value]) => handleFontChange('fontSize.productName', value)}
                     min={12}
                     max={28}
@@ -521,9 +521,9 @@ export function StyleCustomizer({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-600">Product Description: {fontCustomization.fontSize.productDescription}px</Label>
+                  <Label className="text-xs text-gray-600">Product Description: {fontCustomization.fontSize?.productDescription || 14}px</Label>
                   <Slider
-                    value={[fontCustomization.fontSize.productDescription]}
+                    value={[fontCustomization.fontSize?.productDescription || 14]}
                     onValueChange={([value]) => handleFontChange('fontSize.productDescription', value)}
                     min={10}
                     max={20}
@@ -532,9 +532,9 @@ export function StyleCustomizer({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-600">Description: {fontCustomization.fontSize.description}px</Label>
+                  <Label className="text-xs text-gray-600">Description: {fontCustomization.fontSize?.description || 16}px</Label>
                   <Slider
-                    value={[fontCustomization.fontSize.description]}
+                    value={[fontCustomization.fontSize?.description || 16]}
                     onValueChange={([value]) => handleFontChange('fontSize.description', value)}
                     min={12}
                     max={24}

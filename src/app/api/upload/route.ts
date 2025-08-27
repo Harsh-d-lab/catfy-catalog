@@ -26,6 +26,7 @@ const MAX_FILES = 5 // Maximum files per upload
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
+    const supabaseAdmin = createServiceRoleClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -206,8 +207,8 @@ export async function POST(request: NextRequest) {
       const buffer = new Uint8Array(arrayBuffer)
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('uploads')
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+        .from('catfy-uploads')
         .upload(storagePath, buffer, {
           contentType: file.type,
           cacheControl: '3600',
@@ -223,8 +224,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('uploads')
+      const { data: { publicUrl } } = supabaseAdmin.storage
+        .from('catfy-uploads')
         .getPublicUrl(storagePath)
 
       uploadResults.push({
@@ -305,8 +306,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from Supabase Storage
-    const { error: deleteError } = await supabase.storage
-      .from('uploads')
+    const { error: deleteError } = await supabaseAdmin.storage
+      .from('catfy-uploads')
       .remove([filePath])
 
     if (deleteError) {

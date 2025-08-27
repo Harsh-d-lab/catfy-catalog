@@ -109,6 +109,7 @@ export function ModernCatalogTemplate({
       <div className="min-h-screen flex items-center justify-center p-8 page-break">
         <ContactPage 
           profile={profile}
+          catalogue={catalogue}
           themeColors={themeColors}
           customColors={customColors}
         />

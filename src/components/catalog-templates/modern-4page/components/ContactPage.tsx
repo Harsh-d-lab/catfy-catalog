@@ -1,10 +1,11 @@
 import React from 'react'
-import { Profile } from '@prisma/client'
+import { Profile, Catalogue } from '@prisma/client'
 import Image from 'next/image'
 import { ColorCustomization } from '../types/ColorCustomization'
 
 interface ContactPageProps {
   profile: Profile
+  catalogue?: Catalogue
   themeColors: {
     primary: string
     secondary: string
@@ -13,25 +14,29 @@ interface ContactPageProps {
   customColors?: ColorCustomization
 }
 
-export function ContactPage({ profile, themeColors, customColors }: ContactPageProps) {
+export function ContactPage({ profile, catalogue, themeColors, customColors }: ContactPageProps) {
+  const settings = catalogue?.settings as any || {}
+  const contactDetails = settings.contactDetails || {}
+  const socialMedia = settings.socialMedia || {}
+  
   const contactInfo = [
     {
       icon: '📧',
       label: 'Email',
-      value: profile.email,
-      href: `mailto:${profile.email}`
+      value: contactDetails.email || profile.email,
+      href: `mailto:${contactDetails.email || profile.email}`
     },
     {
       icon: '📱',
       label: 'Phone',
-      value: profile.phone,
-      href: profile.phone ? `tel:${profile.phone}` : undefined
+      value: contactDetails.phone || profile.phone,
+      href: (contactDetails.phone || profile.phone) ? `tel:${contactDetails.phone || profile.phone}` : undefined
     },
     {
       icon: '🌐',
       label: 'Website',
-      value: profile.website,
-      href: profile.website
+      value: contactDetails.website || profile.website,
+      href: contactDetails.website || profile.website
     },
     {
       icon: '📍',
@@ -41,7 +46,32 @@ export function ContactPage({ profile, themeColors, customColors }: ContactPageP
     }
   ].filter(item => item.value)
 
-  const socialLinks: any[] = []
+  const socialLinks = [
+    {
+      name: 'Facebook',
+      url: socialMedia.facebook,
+      icon: '📘',
+      color: '#1877F2'
+    },
+    {
+      name: 'Twitter',
+      url: socialMedia.twitter,
+      icon: '🐦',
+      color: '#1DA1F2'
+    },
+    {
+      name: 'Instagram',
+      url: socialMedia.instagram,
+      icon: '📷',
+      color: '#E4405F'
+    },
+    {
+      name: 'LinkedIn',
+      url: socialMedia.linkedin,
+      icon: '💼',
+      color: '#0A66C2'
+    }
+  ].filter(social => social.url && social.url.trim() !== '')
 
   return (
     <div className="w-full max-w-6xl mx-auto">

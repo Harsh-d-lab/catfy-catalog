@@ -176,27 +176,41 @@ export default function EditCataloguePage() {
   }
 
   const saveCatalogue = async () => {
-    if (!catalogue) return
+    console.log('saveCatalogue called, catalogue state:', catalogue)
+    
+    if (!catalogue) {
+      console.error('Catalogue is null or undefined')
+      toast.error('Catalogue data not loaded. Please refresh the page.')
+      return
+    }
     
     try {
       setIsSaving(true)
+      
+      const requestData = {
+        name: catalogue.name,
+        description: catalogue.description,
+        isPublic: catalogue.isPublic,
+        theme: catalogue.theme,
+        settings: catalogue.settings
+      }
+      
+      console.log('Saving catalogue with data:', requestData)
+      console.log('Settings being saved:', catalogue.settings)
       
       const response = await fetch(`/api/catalogues/${catalogueId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: catalogue.name,
-          description: catalogue.description,
-          isPublic: catalogue.isPublic,
-          theme: catalogue.theme
-        })
+        body: JSON.stringify(requestData)
       })
       
+      const responseData = await response.json()
+      console.log('API response:', responseData)
+      
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save catalogue')
+        throw new Error(responseData.error || 'Failed to save catalogue')
       }
       
       toast.success('Catalogue saved successfully!')
@@ -1151,58 +1165,80 @@ export default function EditCataloguePage() {
               {/* Media & Assets */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Media & Assets</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label>Company Logo</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
+                    <Label className="text-sm font-medium mb-2 block">Company Logo</Label>
+                    <FileUpload
+                      uploadType="catalogue"
+                      catalogueId={catalogueId}
+                      maxFiles={1}
+                      accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                      onUpload={(files) => {
+                        if (files.length > 0) {
                           setCatalogue(prev => prev ? {
                             ...prev,
                             settings: {
                               ...prev.settings,
                               mediaAssets: {
                                 ...prev.settings?.mediaAssets,
-                                logoUrl: file.name
+                                logoUrl: files[0].url
                               }
                             }
                           } : null)
                         }
+                      }}
+                      onError={(error) => {
+                        setError(`Logo upload failed: ${error}`)
                       }}
                       className="mt-2"
                     />
                     {catalogue?.settings?.mediaAssets?.logoUrl && (
-                      <p className="text-sm text-gray-600 mt-1">Current: {catalogue.settings.mediaAssets.logoUrl}</p>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-2">Current logo:</p>
+                        <img 
+                          src={catalogue.settings.mediaAssets.logoUrl} 
+                          alt="Company Logo" 
+                          className="w-20 h-20 object-contain border rounded"
+                        />
+                      </div>
                     )}
                   </div>
                   
                   <div>
-                    <Label>Cover Image</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
+                    <Label className="text-sm font-medium mb-2 block">Cover Image</Label>
+                    <FileUpload
+                      uploadType="catalogue"
+                      catalogueId={catalogueId}
+                      maxFiles={1}
+                      accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                      onUpload={(files) => {
+                        if (files.length > 0) {
                           setCatalogue(prev => prev ? {
                             ...prev,
                             settings: {
                               ...prev.settings,
                               mediaAssets: {
                                 ...prev.settings?.mediaAssets,
-                                coverImageUrl: file.name
+                                coverImageUrl: files[0].url
                               }
                             }
                           } : null)
                         }
                       }}
+                      onError={(error) => {
+                        setError(`Cover image upload failed: ${error}`)
+                      }}
                       className="mt-2"
                     />
                     {catalogue?.settings?.mediaAssets?.coverImageUrl && (
-                      <p className="text-sm text-gray-600 mt-1">Current: {catalogue.settings.mediaAssets.coverImageUrl}</p>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-2">Current cover image:</p>
+                        <img 
+                          src={catalogue.settings.mediaAssets.coverImageUrl} 
+                          alt="Cover Image" 
+                          className="w-full h-32 object-cover border rounded"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

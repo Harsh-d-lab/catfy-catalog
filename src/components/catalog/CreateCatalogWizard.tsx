@@ -459,39 +459,51 @@ export function CreateCatalogWizard({ onComplete }: CreateCatalogWizardProps) {
                 <CardContent className="space-y-6">
                   <div>
                      <Label>Company Logo</Label>
-                     <Input
-                       type="file"
-                       accept="image/*"
-                       onChange={(e) => {
-                         const file = e.target.files?.[0]
-                         if (file) {
-                           // For now, just store the file name
-                           updateData('settings.mediaAssets.logoUrl', file.name)
+                     <FileUpload
+                       uploadType="catalogue"
+                       catalogueId={data.id}
+                       onUpload={(results) => {
+                         if (results.length > 0) {
+                           updateData('settings.mediaAssets.logoUrl', results[0].url)
                          }
                        }}
+                       maxFiles={1}
+                       accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
                        className="mt-2"
                      />
                      {data.settings.mediaAssets?.logoUrl && (
-                       <p className="text-sm text-gray-600 mt-1">Selected: {data.settings.mediaAssets.logoUrl}</p>
+                       <div className="mt-2">
+                         <img 
+                           src={data.settings.mediaAssets.logoUrl} 
+                           alt="Logo preview" 
+                           className="w-20 h-20 object-cover rounded-lg border"
+                         />
+                       </div>
                      )}
                    </div>
                    
                    <div>
                      <Label>Cover Image</Label>
-                     <Input
-                       type="file"
-                       accept="image/*"
-                       onChange={(e) => {
-                         const file = e.target.files?.[0]
-                         if (file) {
-                           // For now, just store the file name
-                         updateData('settings.mediaAssets.coverImageUrl', file.name)
+                     <FileUpload
+                       uploadType="catalogue"
+                       catalogueId={data.id}
+                       onUpload={(results) => {
+                         if (results.length > 0) {
+                           updateData('settings.mediaAssets.coverImageUrl', results[0].url)
                          }
                        }}
+                       maxFiles={1}
+                       accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
                        className="mt-2"
                      />
                      {data.settings.mediaAssets?.coverImageUrl && (
-                       <p className="text-sm text-gray-600 mt-1">Selected: {data.settings.mediaAssets.coverImageUrl}</p>
+                       <div className="mt-2">
+                         <img 
+                           src={data.settings.mediaAssets.coverImageUrl} 
+                           alt="Cover image preview" 
+                           className="w-32 h-20 object-cover rounded-lg border"
+                         />
+                       </div>
                      )}
                    </div>
                 </CardContent>
