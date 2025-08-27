@@ -1,6 +1,7 @@
 import React from 'react'
 import { Profile } from '@prisma/client'
 import Image from 'next/image'
+import { ColorCustomization } from '../types/ColorCustomization'
 
 interface ContactPageProps {
   profile: Profile
@@ -9,9 +10,10 @@ interface ContactPageProps {
     secondary: string
     accent: string
   }
+  customColors?: ColorCustomization
 }
 
-export function ContactPage({ profile, themeColors }: ContactPageProps) {
+export function ContactPage({ profile, themeColors, customColors }: ContactPageProps) {
   const contactInfo = [
     {
       icon: '📧',
@@ -47,14 +49,14 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
       <div className="text-center mb-16">
         <h1 
           className="text-5xl font-bold mb-4"
-          style={{ color: 'var(--theme-primary)' }}
+          style={{ color: customColors?.textColors.title || '#3b82f6' }}
         >
           Get in
         </h1>
         <h2 className="text-6xl font-bold text-gray-900 mb-6">
           Touch
         </h2>
-        <div className="w-24 h-1 mx-auto" style={{ backgroundColor: 'var(--theme-primary)' }} />
+        <div className="w-24 h-1 mx-auto" style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }} />
         <p className="text-xl text-gray-600 mt-6 max-w-2xl mx-auto">
           Ready to explore our products? Contact us today for personalized assistance and detailed information.
         </p>
@@ -94,7 +96,7 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
                 <div key={index} className="flex items-start space-x-4">
                   <div 
                     className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl"
-                    style={{ backgroundColor: 'var(--theme-primary)' }}
+                    style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }}
                   >
                     {contact.icon}
                   </div>
@@ -106,7 +108,7 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
                       <a 
                         href={contact.href}
                         className="text-gray-600 hover:underline"
-                        style={{ color: 'var(--theme-primary)' }}
+                        style={{ color: customColors?.textColors.title || '#3b82f6' }}
                       >
                         {contact.value}
                       </a>
@@ -150,12 +152,12 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
         <div className="">
           <div 
             className="rounded-2xl p-8 h-full flex flex-col justify-center"
-            style={{ backgroundColor: 'var(--theme-accent)' }}
+            style={{ backgroundColor: customColors?.backgroundColors.categorySection || '#f3f4f6' }}
           >
             <div className="text-center">
               <div 
                 className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-white text-3xl"
-                style={{ backgroundColor: 'var(--theme-primary)' }}
+                style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }}
               >
                 💬
               </div>
@@ -173,7 +175,7 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
               <div className="space-y-4">
                 <div 
                   className="inline-block px-8 py-4 rounded-lg text-white font-medium text-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                  style={{ backgroundColor: 'var(--theme-primary)' }}
+                  style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }}
                 >
                   Contact Us Now
                 </div>
@@ -223,7 +225,7 @@ export function ContactPage({ profile, themeColors }: ContactPageProps) {
               href={profile.website}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'var(--theme-primary)' }}
+              style={{ color: customColors?.textColors.title || '#3b82f6' }}
               className="hover:underline"
             >
               {profile.website}

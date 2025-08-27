@@ -109,7 +109,6 @@ interface Category {
 }
 
 interface Product {
-  isAvailable: any
   id: string
   name: string
   description: string
@@ -118,6 +117,7 @@ interface Product {
   imageUrl?: string
   categoryId: string
   isActive: boolean
+  tags?: string[]
 }
 
 export default function EditCataloguePage() {
@@ -143,7 +143,9 @@ export default function EditCataloguePage() {
     price: 0,
     priceDisplay: 'show' as 'show' | 'hide' | 'contact',
     categoryId: '',
-    isActive: true
+    isActive: true,
+    imageUrl: '',
+    tags: [] as string[]
   })
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
@@ -234,7 +236,9 @@ export default function EditCataloguePage() {
       price: product?.price || 0,
       priceDisplay: (product?.priceDisplay as 'show' | 'hide' | 'contact') || 'show',
       categoryId: product?.categoryId || '',
-      isActive: product?.isActive ?? true
+      isActive: product?.isActive ?? true,
+      imageUrl: product?.imageUrl || '',
+      tags: product?.tags || []
     })
     setShowProductDialog(true)
   }
@@ -295,9 +299,11 @@ export default function EditCataloguePage() {
       const productData: any = {
         name: productForm.name,
         description: productForm.description,
-        price: productForm.price,
+        price: Number(productForm.price),
         priceDisplay: productForm.priceDisplay,
-        isActive: productForm.isActive
+        isActive: productForm.isActive,
+        imageUrl: productForm.imageUrl || undefined,
+        tags: productForm.tags
       }
       
       // Only include categoryId if it's not empty
@@ -326,7 +332,9 @@ export default function EditCataloguePage() {
         price: 0,
         priceDisplay: 'show' as 'show' | 'hide' | 'contact',
         categoryId: '',
-        isActive: true
+        isActive: true,
+        imageUrl: '',
+        tags: []
       })
       setEditingProduct(null)
       await fetchCatalogue()
@@ -705,8 +713,8 @@ export default function EditCataloguePage() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-semibold">{product.priceDisplay}</span>
-                          <Badge variant={product.isAvailable ? 'default' : 'secondary'}>
-                            {product.isAvailable ? 'Available' : 'Unavailable'}
+                          <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                            {product.isActive ? 'Available' : 'Unavailable'}
                           </Badge>
                         </div>
                         {product.categoryId && (
@@ -816,12 +824,58 @@ export default function EditCataloguePage() {
               
               <div>
                 <Label htmlFor="productDescription">Description</Label>
-                <Textarea
-                  id="productDescription"
-                  value={productForm.description}
-                  onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter product description"
-                  rows={3}
+                <div className="space-y-2">
+                  <Textarea
+                    id="productDescription"
+                    value={productForm.description}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Enter product description"
+                    rows={3}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      // Dummy AI generate functionality
+                      const aiDescriptions = [
+                        "High-quality product with excellent features and durability.",
+                        "Premium item designed for modern lifestyle and convenience.",
+                        "Innovative solution that combines style with functionality.",
+                        "Professional-grade product built to exceed expectations.",
+                        "Carefully crafted item with attention to detail and quality."
+                      ];
+                      const randomDescription = aiDescriptions[Math.floor(Math.random() * aiDescriptions.length)];
+                      setProductForm(prev => ({ ...prev, description: randomDescription }));
+                      toast.success("AI description generated!");
+                    }}
+                  >
+                    🤖 AI Generate Description
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="productImage">Product Image URL</Label>
+                <Input
+                  id="productImage"
+                  value={productForm.imageUrl}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  placeholder="Enter image URL (optional)"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="productTags">Tags</Label>
+                <Input
+                  id="productTags"
+                  value={productForm.tags?.join(', ') || ''}
+                  onChange={(e) => {
+                    const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                    setProductForm(prev => ({ ...prev, tags: tagsArray }));
+                  }}
+                  placeholder="Enter tags separated by commas (e.g., electronics, gadgets, premium)"
                 />
               </div>
               

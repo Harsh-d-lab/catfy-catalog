@@ -47,29 +47,46 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // If profile doesn't exist, create it automatically
+    // If profile doesn't exist, create it using upsert to prevent race conditions
     if (!profile && user.email) {
       const fullName = user.user_metadata?.full_name || user.user_metadata?.name || ''
       const firstName = fullName.split(' ')[0] || ''
       const lastName = fullName.split(' ').slice(1).join(' ') || ''
       
-      profile = await prisma.profile.create({
-        data: {
-          id: user.id,
-          email: user.email,
-          firstName,
-          lastName,
-          fullName: fullName || null,
-          accountType: 'INDIVIDUAL',
-        },
-        select: { 
-          id: true, 
-          subscriptions: {
-            where: { status: SubscriptionStatus.ACTIVE },
-            select: { billingCycle: true, status: true }
+      try {
+        profile = await prisma.profile.upsert({
+          where: { id: user.id },
+          update: {},
+          create: {
+            id: user.id,
+            email: user.email,
+            firstName,
+            lastName,
+            fullName: fullName || null,
+            accountType: 'INDIVIDUAL',
+          },
+          select: { 
+            id: true, 
+            subscriptions: {
+              where: { status: SubscriptionStatus.ACTIVE },
+              select: { billingCycle: true, status: true }
+            }
           }
-        }
-      })
+        })
+      } catch (error) {
+        console.error('Failed to create profile in upload route:', error)
+        // Try to fetch the profile again in case another request created it
+        profile = await prisma.profile.findUnique({
+          where: { id: user.id },
+          select: { 
+            id: true, 
+            subscriptions: {
+              where: { status: SubscriptionStatus.ACTIVE },
+              select: { billingCycle: true, status: true }
+            }
+          }
+        })
+      }
     }
 
     if (!profile) {

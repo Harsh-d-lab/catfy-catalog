@@ -7,19 +7,13 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, Edit, Share2, Download, AlertTriangle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
+import { StyleCustomizer, DEFAULT_FONT_CUSTOMIZATION, DEFAULT_SPACING_CUSTOMIZATION, DEFAULT_ADVANCED_STYLES, FontCustomization, SpacingCustomization, AdvancedStyleCustomization } from '@/components/catalog-templates/modern-4page/components/StyleCustomizer'
+import { ColorCustomization } from '@/components/catalog-templates/modern-4page/types/ColorCustomization'
+import { Catalogue as PrismaCatalogue, Product as PrismaProduct, Category as PrismaCategory } from '@prisma/client'
 
-interface Catalogue {
-  id: string
-  name: string
-  description: string | null
-  theme: string
-  isPublic: boolean
-  settings: any
-  createdAt: string
-  updatedAt: string
-  profileId: string
-  categories: Category[]
-  products: Product[]
+type Catalogue = PrismaCatalogue & {
+  categories: PrismaCategory[]
+  products: (PrismaProduct & { category: PrismaCategory | null })[]
   profile?: {
     fullName: string
     companyName: string | null
@@ -33,30 +27,35 @@ interface Catalogue {
   }
 }
 
-interface Category {
-  id: string
-  name: string
-  description: string | null
-  sortOrder: number
-}
-
-interface Product {
-  id: string
-  name: string
-  description: string | null
-  price: number | null
-  sku: string | null
-  imageUrl: string | null
-  categoryId: string | null
-  category: Category | null
-  isActive: boolean
-  sortOrder: number
-}
+type Category = PrismaCategory
+type Product = PrismaProduct & { category: PrismaCategory | null }
 
 export default function CataloguePreviewPage() {
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [showStyleCustomizer, setShowStyleCustomizer] = useState(false)
+  const [customColors, setCustomColors] = useState<ColorCustomization>({
+    textColors: {
+      companyName: '#1f2937',
+      title: '#1f2937',
+      description: '#6b7280',
+      productName: '#1f2937',
+      productDescription: '#6b7280',
+      productPrice: '#059669',
+      categoryName: '#1f2937'
+    },
+    backgroundColors: {
+      main: '#ffffff',
+      cover: '#f9fafb',
+      productCard: '#ffffff',
+      categorySection: '#f3f4f6'
+    }
+  })
+  const [fontCustomization, setFontCustomization] = useState<FontCustomization>(DEFAULT_FONT_CUSTOMIZATION)
+  const [spacingCustomization, setSpacingCustomization] = useState<SpacingCustomization>(DEFAULT_SPACING_CUSTOMIZATION)
+  const [advancedStyles, setAdvancedStyles] = useState<AdvancedStyleCustomization>(DEFAULT_ADVANCED_STYLES)
   
   const params = useParams()
   const catalogueId = params.id as string
@@ -82,16 +81,231 @@ export default function CataloguePreviewPage() {
     }
   }
 
+  const handleProductsReorder = async (updatedProducts: (PrismaProduct & { category: PrismaCategory | null })[]) => {
+    if (!catalogueId) return
+    
+    try {
+      const response = await fetch(`/api/catalogues/${catalogueId}/products/sort`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productUpdates: updatedProducts.map((product, index) => ({
+            id: product.id,
+            sortOrder: index
+          }))
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reorder products')
+      }
+
+      // Update local state
+      setCatalogue(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          products: updatedProducts
+        }
+      })
+    } catch (error) {
+      console.error('Error reordering products:', error)
+    }
+  }
+
+  const handleCatalogueUpdate = async (catalogueId: string, updates: Partial<PrismaCatalogue>) => {
+    try {
+      console.log('Attempting to update catalogue:', catalogueId, updates)
+      const response = await fetch(`/api/catalogues/${catalogueId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error Response:', errorText)
+        throw new Error(`Failed to update catalogue: ${response.status} ${errorText}`)
+      }
+
+      const responseData = await response.json()
+      console.log('Successfully updated catalogue:', responseData)
+      
+      // Extract the catalogue data from the response
+      const updatedCatalogue = responseData.catalogue || responseData
+      
+      // Update the catalogue state with the new data
+      setCatalogue(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          ...updatedCatalogue,
+          // Ensure settings are properly merged
+          settings: {
+            ...(prev.settings as object || {}),
+            ...(updatedCatalogue.settings as object || {})
+          }
+        }
+      })
+    } catch (error) {
+      console.error('Error updating catalogue:', error)
+    }
+  }
+
+  const handleProductUpdate = async (productId: string, updates: Partial<PrismaProduct>) => {
+    try {
+      const response = await fetch(`/api/catalogues/${catalogueId}/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update product')
+      }
+
+      const responseData = await response.json()
+      console.log('Successfully updated product:', responseData)
+      
+      // Extract the product data from the response
+      const updatedProduct = responseData.product || responseData
+      
+      setCatalogue(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          products: prev.products.map(product => 
+            product.id === productId ? { ...product, ...updatedProduct } : product
+          )
+        }
+      })
+    } catch (error) {
+      console.error('Error updating product:', error)
+    }
+  }
+
+  const handleColorChange = async (colors: ColorCustomization) => {
+    setCustomColors(colors)
+    
+    // Save to database
+    if (catalogue?.id) {
+      await handleCatalogueUpdate(catalogue.id, {
+        settings: {
+          ...(catalogue.settings as object || {}),
+          customColors: colors
+        }
+      })
+    }
+  }
+
+  const handleColorReset = () => {
+    setCustomColors({
+      textColors: {
+        companyName: '#1f2937',
+        title: '#1f2937',
+        description: '#6b7280',
+        productName: '#1f2937',
+        productDescription: '#6b7280',
+        productPrice: '#059669',
+        categoryName: '#1f2937'
+      },
+      backgroundColors: {
+        main: '#ffffff',
+        cover: '#f9fafb',
+        productCard: '#ffffff',
+        categorySection: '#f3f4f6'
+      }
+    })
+  }
+
+  const handleFontChange = async (fontCustomization: FontCustomization) => {
+    setFontCustomization(fontCustomization)
+    
+    // Save to database
+    if (catalogue?.id) {
+      await handleCatalogueUpdate(catalogue.id, {
+        settings: {
+          ...(catalogue.settings as object || {}),
+          fontCustomization
+        }
+      })
+    }
+  }
+
+  const handleSpacingChange = async (spacingCustomization: SpacingCustomization) => {
+    setSpacingCustomization(spacingCustomization)
+    
+    // Save to database
+    if (catalogue?.id) {
+      await handleCatalogueUpdate(catalogue.id, {
+        settings: {
+          ...(catalogue.settings as object || {}),
+          spacingCustomization
+        }
+      })
+    }
+  }
+
+  const handleAdvancedStylesChange = async (advancedStyles: AdvancedStyleCustomization) => {
+    setAdvancedStyles(advancedStyles)
+    
+    // Save to database
+    if (catalogue?.id) {
+      await handleCatalogueUpdate(catalogue.id, {
+        settings: {
+          ...(catalogue.settings as object || {}),
+          advancedStyles
+        }
+      })
+    }
+  }
+
   useEffect(() => {
     if (catalogueId) {
       loadCatalogue()
     }
   }, [catalogueId])
 
+  // Initialize customizations from catalogue settings when catalogue is loaded
+  useEffect(() => {
+    if (catalogue?.settings) {
+      const settings = catalogue.settings as any
+      
+      // Initialize custom colors from saved settings
+      if (settings.customColors) {
+        setCustomColors(settings.customColors)
+      }
+      
+      // Initialize font customization from saved settings
+      if (settings.fontCustomization) {
+        setFontCustomization(settings.fontCustomization)
+      }
+      
+      // Initialize spacing customization from saved settings
+      if (settings.spacingCustomization) {
+        setSpacingCustomization(settings.spacingCustomization)
+      }
+      
+      // Initialize advanced styles from saved settings
+      if (settings.advancedStyles) {
+        setAdvancedStyles(settings.advancedStyles)
+      }
+    }
+  }, [catalogue])
+
   // Reload catalogue data when the page becomes visible (e.g., when navigating back)
+  // but preserve edit mode state
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && catalogueId) {
+      if (!document.hidden && catalogueId && !isEditMode) {
         loadCatalogue()
       }
     }
@@ -100,7 +314,7 @@ export default function CataloguePreviewPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [catalogueId])
+  }, [catalogueId, isEditMode])
 
   if (isLoading) {
     return (
@@ -212,10 +426,22 @@ export default function CataloguePreviewPage() {
             </div>
             
             <div className="flex items-center gap-2">
+              <Button 
+                variant={isEditMode ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className="relative"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                {isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}
+                {isEditMode && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
+                )}
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/catalogue/${catalogue.id}/edit`}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  Full Edit
                 </Link>
               </Button>
               <Button variant="outline" size="sm">
@@ -231,40 +457,88 @@ export default function CataloguePreviewPage() {
         </div>
       </div>
 
-      {/* Template Content */}
-      <div 
-        className="bg-white"
-        style={{
-          '--theme-primary': themeColors.primary,
-          '--theme-secondary': themeColors.secondary,
-          '--theme-accent': themeColors.accent,
-        } as React.CSSProperties}
-      >
-        {TemplateComponent && templateConfig ? (
-          <TemplateComponent 
-            catalogue={{
-              ...catalogue,
-              status: 'PUBLISHED',
-              slug: null,
-              viewCount: 0,
-              exportCount: 0,
-              shareCount: 0,
-              lastViewedAt: null,
-              lastExportedAt: null,
-              lastSharedAt: null,
-              settings: catalogue?.settings || {},
-              categories: catalogue?.categories || [],
-              products: catalogue?.products || [],
-              profile: catalogue?.profile || null
-            } as any}
-            profile={profileData}
-            themeColors={themeColors}
-          />
-        ) : (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Template Not Found</h2>
-              <p className="text-gray-600">The selected template could not be loaded.</p>
+      {/* Main Content Area with Sidebar */}
+      <div className="flex bg-gray-100 min-h-[calc(100vh-73px)] relative">
+        {/* Template Content - PDF Export Size Preview */}
+        <div className={`flex justify-center py-1 transition-all duration-300 overflow-x-hidden overflow-y-auto h-[calc(100vh-73px)] ${
+          isEditMode ? 'w-[calc(100vw-320px)]' : 'w-full'
+        }`}>
+          <div className="overflow-x-hidden">
+            <div 
+              className="bg-white shadow-lg transition-all duration-200 relative group"
+              style={{
+                '--theme-primary': themeColors.primary,
+                '--theme-secondary': themeColors.secondary,
+                '--theme-accent': themeColors.accent,
+                // A4 size dimensions (210mm x 297mm) at 96 DPI
+                width: '794px', // 210mm at 96 DPI
+                minHeight: '1123px', // 297mm at 96 DPI
+                maxWidth: '794px',
+                transform: 'scale(1)', // Larger scale for better visibility
+                transformOrigin: 'top center',
+                margin: '0 auto',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                border: isEditMode ? '2px solid #3b82f6' : '2px solid transparent',
+              } as React.CSSProperties}
+            >
+              {TemplateComponent && templateConfig ? (
+                <TemplateComponent 
+                  key={`${JSON.stringify(customColors)}-${JSON.stringify(fontCustomization)}-${JSON.stringify(spacingCustomization)}-${JSON.stringify(advancedStyles)}`}
+                  catalogue={{
+                    ...catalogue,
+                    status: 'PUBLISHED',
+                    slug: null,
+                    viewCount: 0,
+                    exportCount: 0,
+                    shareCount: 0,
+                    lastViewedAt: null,
+                    lastExportedAt: null,
+                    lastSharedAt: null,
+                    settings: catalogue?.settings || {},
+                    categories: catalogue?.categories || [],
+                    products: catalogue?.products || [],
+                    profile: catalogue?.profile || null
+                  } as any}
+                  profile={profileData}
+                  themeColors={themeColors}
+                  isEditMode={isEditMode}
+                  catalogueId={catalogueId}
+                  onProductsReorder={handleProductsReorder}
+                  onCatalogueUpdate={handleCatalogueUpdate}
+                  onProductUpdate={handleProductUpdate}
+                  customColors={customColors}
+                  fontCustomization={fontCustomization}
+                  spacingCustomization={spacingCustomization}
+                  advancedStyles={advancedStyles}
+                />
+              ) : (
+                <div className="min-h-screen flex items-center justify-center">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Template Not Found</h2>
+                    <p className="text-gray-600">The selected template could not be loaded.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Right Sidebar - StyleCustomizer */}
+        {isEditMode && (
+          <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl border-l border-gray-200 z-50 overflow-y-auto">
+            <div className="p-4">
+              <StyleCustomizer
+                isVisible={true}
+                onToggle={() => {}}
+                customColors={customColors}
+                onColorsChange={handleColorChange}
+                fontCustomization={fontCustomization}
+                onFontChange={handleFontChange}
+                spacingCustomization={spacingCustomization}
+                onSpacingChange={handleSpacingChange}
+                advancedStyles={advancedStyles}
+                onAdvancedStylesChange={handleAdvancedStylesChange}
+              />
             </div>
           </div>
         )}

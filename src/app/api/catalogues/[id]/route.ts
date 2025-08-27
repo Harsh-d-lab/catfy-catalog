@@ -51,6 +51,47 @@ const updateCatalogueSchema = z.object({
       youtube: z.string().optional(),
       tiktok: z.string().optional(),
     }).optional(),
+    // Style Customizations
+    customColors: z.object({
+      textColors: z.object({
+        companyName: z.string().optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        productName: z.string().optional(),
+        productDescription: z.string().optional(),
+        productPrice: z.string().optional(),
+        categoryName: z.string().optional(),
+      }).optional(),
+      backgroundColors: z.object({
+        main: z.string().optional(),
+        cover: z.string().optional(),
+        productCard: z.string().optional(),
+        categorySection: z.string().optional(),
+      }).optional(),
+    }).optional(),
+    fontCustomization: z.object({
+      headingFont: z.string().optional(),
+      bodyFont: z.string().optional(),
+      headingSize: z.number().optional(),
+      bodySize: z.number().optional(),
+      headingWeight: z.number().optional(),
+      bodyWeight: z.number().optional(),
+      lineHeight: z.number().optional(),
+      letterSpacing: z.number().optional(),
+    }).optional(),
+    spacingCustomization: z.object({
+      sectionSpacing: z.number().optional(),
+      elementSpacing: z.number().optional(),
+      padding: z.number().optional(),
+      margin: z.number().optional(),
+      borderRadius: z.number().optional(),
+    }).optional(),
+    advancedStyles: z.object({
+      shadows: z.boolean().optional(),
+      gradients: z.boolean().optional(),
+      animations: z.boolean().optional(),
+      customCSS: z.string().optional(),
+    }).optional(),
   }).optional(),
 })
 
@@ -299,6 +340,14 @@ export async function PUT(
       { status: 500 }
     )
   }
+}
+
+// PATCH - Update catalogue (same as PUT for compatibility)
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  return PUT(request, { params })
 }
 
 // DELETE - Delete catalogue

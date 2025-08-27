@@ -27,10 +27,29 @@ export async function GET() {
       )
     }
 
-    const profile = await getUserProfile(user.id)
+    let profile = await getUserProfile(user.id)
+    
+    // If profile doesn't exist, try to create it
+    if (!profile && user.email) {
+      try {
+        await createOrUpdateProfile({
+          email: user.email,
+          firstName: user.user_metadata?.full_name?.split(' ')[0] || '',
+          lastName: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+          accountType: 'INDIVIDUAL',
+        })
+        // Fetch the profile with includes after creation
+        profile = await getUserProfile(user.id)
+      } catch (error) {
+        console.error('Failed to create profile:', error)
+        // If creation fails, try to fetch again in case another request created it
+        profile = await getUserProfile(user.id)
+      }
+    }
+    
     if (!profile) {
       return NextResponse.json(
-        { error: 'Profile not found' },
+        { error: 'Profile not found and could not be created' },
         { status: 404 }
       )
     }

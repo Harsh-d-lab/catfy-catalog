@@ -70,10 +70,12 @@ export async function GET(request: NextRequest) {
 
     let profile = await getUserProfile(user.id)
     if (!profile) {
-      // Create profile automatically if it doesn't exist
+      // Create profile automatically if it doesn't exist using upsert
       try {
-        profile = await prisma.profile.create({
-          data: {
+        profile = await prisma.profile.upsert({
+          where: { id: user.id },
+          update: {},
+          create: {
             id: user.id,
             email: user.email || '',
             accountType: AccountType.INDIVIDUAL, // Default to INDIVIDUAL account
@@ -94,10 +96,35 @@ export async function GET(request: NextRequest) {
         })
       } catch (error) {
         console.error('Failed to create profile:', error)
-        return NextResponse.json(
-          { error: 'Failed to create or find profile' },
-          { status: 500 }
-        )
+        // Fallback: try to find existing profile
+        try {
+          profile = await prisma.profile.findUnique({
+            where: { id: user.id },
+            include: {
+              catalogues: {
+                orderBy: { updatedAt: 'desc' },
+                take: 5,
+              },
+              subscriptions: {
+                where: { status: 'ACTIVE' },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          })
+          if (!profile) {
+            return NextResponse.json(
+              { error: 'Failed to create or find profile' },
+              { status: 500 }
+            )
+          }
+        } catch (fallbackError) {
+          console.error('Fallback profile lookup failed:', fallbackError)
+          return NextResponse.json(
+            { error: 'Failed to create or find profile' },
+            { status: 500 }
+          )
+        }
       }
     }
 
@@ -197,10 +224,12 @@ export async function POST(request: NextRequest) {
 
     let profile = await getUserProfile(user.id)
     if (!profile) {
-      // Create profile automatically if it doesn't exist
+      // Create profile automatically if it doesn't exist using upsert
       try {
-        profile = await prisma.profile.create({
-          data: {
+        profile = await prisma.profile.upsert({
+          where: { id: user.id },
+          update: {},
+          create: {
             id: user.id,
             email: user.email || '',
             accountType: AccountType.INDIVIDUAL, // Default to INDIVIDUAL account
@@ -221,10 +250,35 @@ export async function POST(request: NextRequest) {
         })
       } catch (error) {
         console.error('Failed to create profile:', error)
-        return NextResponse.json(
-          { error: 'Failed to create or find profile' },
-          { status: 500 }
-        )
+        // Fallback: try to find existing profile
+        try {
+          profile = await prisma.profile.findUnique({
+            where: { id: user.id },
+            include: {
+              catalogues: {
+                orderBy: { updatedAt: 'desc' },
+                take: 5,
+              },
+              subscriptions: {
+                where: { status: 'ACTIVE' },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          })
+          if (!profile) {
+            return NextResponse.json(
+              { error: 'Failed to create or find profile' },
+              { status: 500 }
+            )
+          }
+        } catch (fallbackError) {
+          console.error('Fallback profile lookup failed:', fallbackError)
+          return NextResponse.json(
+            { error: 'Failed to create or find profile' },
+            { status: 500 }
+          )
+        }
       }
     }
 

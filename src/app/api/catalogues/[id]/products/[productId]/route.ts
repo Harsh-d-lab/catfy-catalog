@@ -11,6 +11,7 @@ const updateProductSchema = z.object({
   sku: z.string().max(50).optional(),
   categoryId: z.string().uuid().optional(),
   tags: z.array(z.string()).optional(),
+  imageUrl: z.string().url().optional().or(z.literal('')),
   images: z.array(z.string().url()).optional(),
   specifications: z.record(z.string()).optional(),
   isActive: z.boolean().optional(),

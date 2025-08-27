@@ -13,6 +13,15 @@ export interface CatalogTemplateProps {
     secondary: string
     accent: string
   }
+  isEditMode?: boolean
+  catalogueId?: string
+  onProductsReorder?: (products: (Product & { category: Category | null })[]) => void
+  onCatalogueUpdate?: (catalogueId: string, updates: Partial<Catalogue>) => void
+  onProductUpdate?: (productId: string, updates: Partial<Product>) => void
+  customColors?: any
+  fontCustomization?: any
+  spacingCustomization?: any
+  advancedStyles?: any
 }
 
 // Template configuration interface

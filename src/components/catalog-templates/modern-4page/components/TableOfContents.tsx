@@ -1,6 +1,7 @@
 import React from 'react'
 import { Product, Category } from '@prisma/client'
 import Image from 'next/image'
+import { ColorCustomization } from '../types/ColorCustomization'
 
 interface TableOfContentsProps {
   categories: Category[]
@@ -10,9 +11,10 @@ interface TableOfContentsProps {
     secondary: string
     accent: string
   }
+  customColors?: ColorCustomization
 }
 
-export function TableOfContents({ categories, products, themeColors }: TableOfContentsProps) {
+export function TableOfContents({ categories, products, themeColors, customColors }: TableOfContentsProps) {
   // Group products by category for counting
   const categoryStats = categories.map(category => {
     const categoryProducts = products.filter(p => p.categoryId === category.id)
@@ -29,14 +31,14 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
       <div className="text-center mb-16">
         <h1 
           className="text-5xl font-bold mb-4"
-          style={{ color: 'var(--theme-primary)' }}
+          style={{ color: customColors?.textColors.title || '#3b82f6' }}
         >
           Table of
         </h1>
         <h2 className="text-6xl font-bold text-gray-900 mb-6">
           Content
         </h2>
-        <div className="w-24 h-1 mx-auto" style={{ backgroundColor: 'var(--theme-primary)' }} />
+        <div className="w-24 h-1 mx-auto" style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }} />
       </div>
 
       {/* Categories Grid */}
@@ -58,7 +60,7 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
                 ) : (
                   <div 
                     className="w-full h-full flex items-center justify-center text-white text-4xl font-bold"
-                    style={{ backgroundColor: category.color || 'var(--theme-primary)' }}
+                    style={{ backgroundColor: category.color || customColors?.textColors.title || '#3b82f6' }}
                   >
                     {category.name.charAt(0).toUpperCase()}
                   </div>
@@ -66,8 +68,8 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
               </div>
 
               {/* Category Number */}
-              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-4" style={{ borderColor: 'var(--theme-primary)' }}>
-                <span className="text-xl font-bold" style={{ color: 'var(--theme-primary)' }}>
+              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-4" style={{ borderColor: customColors?.textColors.title || '#3b82f6' }}>
+                <span className="text-xl font-bold" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
                   {String(index + 1).padStart(2, '0')}
                 </span>
               </div>
@@ -78,7 +80,7 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
               <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">
                 {category.name}
               </h3>
-              <p className="text-lg font-medium" style={{ color: 'var(--theme-primary)' }}>
+              <p className="text-lg font-medium" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
                 CATEGORY
               </p>
               
@@ -108,7 +110,7 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
       <div className="mt-16 pt-8 border-t border-gray-200">
         <div className="grid grid-cols-3 gap-8 text-center">
           <div>
-            <div className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>
+            <div className="text-3xl font-bold" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
               {categories.length}
             </div>
             <div className="text-gray-600 uppercase tracking-wide text-sm">
@@ -116,7 +118,7 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
             </div>
           </div>
           <div>
-            <div className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>
+            <div className="text-3xl font-bold" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
               {products.length}
             </div>
             <div className="text-gray-600 uppercase tracking-wide text-sm">
@@ -124,7 +126,7 @@ export function TableOfContents({ categories, products, themeColors }: TableOfCo
             </div>
           </div>
           <div>
-            <div className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>
+            <div className="text-3xl font-bold" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
               100%
             </div>
             <div className="text-gray-600 uppercase tracking-wide text-sm">

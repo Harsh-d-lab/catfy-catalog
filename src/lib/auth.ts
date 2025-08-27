@@ -196,34 +196,7 @@ export async function getUserProfile(userId?: string) {
     },
   })
   
-  // If profile doesn't exist, create it automatically
-  if (!profile && user.email) {
-    const fullName = user.user_metadata?.full_name || user.user_metadata?.name || ''
-    const firstName = fullName.split(' ')[0] || ''
-    const lastName = fullName.split(' ').slice(1).join(' ') || ''
-    
-    profile = await prisma.profile.create({
-      data: {
-        id: user.id,
-        email: user.email,
-        firstName,
-        lastName,
-        fullName: fullName || null,
-        accountType: 'INDIVIDUAL',
-      },
-      include: {
-        catalogues: {
-          orderBy: { updatedAt: 'desc' },
-          take: 5,
-        },
-        subscriptions: {
-          where: { status: 'ACTIVE' },
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    })
-  }
+  // Profile creation is now handled in the API route to prevent race conditions
   
   return profile
 }

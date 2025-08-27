@@ -16,11 +16,12 @@ const AuthContext = createContext<AuthContextType>({
   isTestUser: false,
 })
 
+const supabase = createClient()
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isTestUser, setIsTestUser] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     // Check for test user bypass
@@ -92,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth, isTestUser])
+  }, [isTestUser])
 
   return (
     <AuthContext.Provider value={{ user, loading, isTestUser }}>
