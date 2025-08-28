@@ -2,6 +2,7 @@ import React from 'react'
 import { Product, Category } from '@prisma/client'
 import Image from 'next/image'
 import { ColorCustomization } from '../types/ColorCustomization'
+import { FontCustomization } from './StyleCustomizer'
 
 interface TableOfContentsProps {
   categories: Category[]
@@ -12,9 +13,10 @@ interface TableOfContentsProps {
     accent: string
   }
   customColors?: ColorCustomization
+  fontCustomization?: FontCustomization
 }
 
-export function TableOfContents({ categories, products, themeColors, customColors }: TableOfContentsProps) {
+export function TableOfContents({ categories, products, themeColors, customColors, fontCustomization }: TableOfContentsProps) {
   // Group products by category for counting
   const categoryStats = categories.map(category => {
     const categoryProducts = products.filter(p => p.categoryId === category.id)
@@ -31,11 +33,17 @@ export function TableOfContents({ categories, products, themeColors, customColor
       <div className="text-center mb-16">
         <h1 
           className="text-5xl font-bold mb-4"
-          style={{ color: customColors?.textColors.title || '#3b82f6' }}
+          style={{ 
+            color: customColors?.textColors.title || '#3b82f6',
+            fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+          }}
         >
           Table of
         </h1>
-        <h2 className="text-6xl font-bold text-gray-900 mb-6">
+        <h2 
+          className="text-6xl font-bold text-gray-900 mb-6"
+          style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+        >
           Content
         </h2>
         <div className="w-24 h-1 mx-auto" style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }} />
@@ -77,10 +85,19 @@ export function TableOfContents({ categories, products, themeColors, customColor
 
             {/* Category Info */}
             <div className="space-y-3">
-              <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-wide">
+              <h3 
+                className="text-2xl font-bold text-gray-900 uppercase tracking-wide"
+                style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+              >
                 {category.name}
               </h3>
-              <p className="text-lg font-medium" style={{ color: customColors?.textColors.title || '#3b82f6' }}>
+              <p 
+                className="text-lg font-medium" 
+                style={{ 
+                  color: customColors?.textColors.title || '#3b82f6',
+                  fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+                }}
+              >
                 CATEGORY
               </p>
               

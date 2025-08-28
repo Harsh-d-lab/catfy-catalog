@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Roboto, Open_Sans, Lato, Montserrat, Poppins, Playfair_Display, Merriweather } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700'], variable: '--font-roboto' })
+const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-open-sans' })
+const lato = Lato({ subsets: ['latin'], weight: ['300', '400', '700'], variable: '--font-lato' })
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
+const poppins = Poppins({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-poppins' })
+const playfairDisplay = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair-display' })
+const merriweather = Merriweather({ subsets: ['latin'], weight: ['300', '400', '700'], variable: '--font-merriweather' })
 
 export const metadata: Metadata = {
   title: 'CATFY - AI-Driven Dynamic Catalogues',
@@ -53,7 +60,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${playfairDisplay.variable} ${merriweather.variable} ${inter.className}`}>
         <Providers>
           {children}
           <Toaster />

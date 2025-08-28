@@ -63,6 +63,8 @@ export default function CataloguePreviewPage() {
   const loadCatalogue = async () => {
     try {
       setIsLoading(true)
+      setError(null)
+      
       const response = await fetch(`/api/catalogues/${catalogueId}`)
       
       if (response.ok) {
@@ -117,7 +119,7 @@ export default function CataloguePreviewPage() {
 
   const handleCatalogueUpdate = async (catalogueId: string, updates: Partial<PrismaCatalogue>) => {
     try {
-      console.log('Attempting to update catalogue:', catalogueId, updates)
+      console.log('🔄 handleCatalogueUpdate called with:', { catalogueId, updates })
       const response = await fetch(`/api/catalogues/${catalogueId}`, {
         method: 'PATCH',
         headers: {
@@ -126,16 +128,16 @@ export default function CataloguePreviewPage() {
         body: JSON.stringify(updates),
       })
 
-      console.log('Response status:', response.status)
+      console.log('📡 API Response status:', response.status)
       
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('API Error Response:', errorText)
+        console.error('❌ API Error:', errorText)
         throw new Error(`Failed to update catalogue: ${response.status} ${errorText}`)
       }
 
       const responseData = await response.json()
-      console.log('Successfully updated catalogue:', responseData)
+      console.log('✅ Catalogue updated successfully:', responseData)
       
       // Extract the catalogue data from the response
       const updatedCatalogue = responseData.catalogue || responseData
@@ -143,7 +145,7 @@ export default function CataloguePreviewPage() {
       // Update the catalogue state with the new data
       setCatalogue(prev => {
         if (!prev) return null
-        return {
+        const newCatalogue = {
           ...prev,
           ...updatedCatalogue,
           // Ensure settings are properly merged
@@ -152,9 +154,18 @@ export default function CataloguePreviewPage() {
             ...(updatedCatalogue.settings as object || {})
           }
         }
+        
+        // Also update the fontCustomization state if it's in the response
+        const newSettings = newCatalogue.settings as any
+        if (newSettings?.fontCustomization) {
+          console.log('🔄 Updating fontCustomization state from API response:', newSettings.fontCustomization)
+          setFontCustomization(newSettings.fontCustomization)
+        }
+        
+        return newCatalogue
       })
     } catch (error) {
-      console.error('Error updating catalogue:', error)
+      console.error('💥 Error updating catalogue:', error)
     }
   }
 
@@ -193,16 +204,21 @@ export default function CataloguePreviewPage() {
   }
 
   const handleColorChange = async (colors: ColorCustomization) => {
+    console.log('🎨 handleColorChange called with:', colors)
     setCustomColors(colors)
     
     // Save to database
     if (catalogue?.id) {
+      console.log('💾 Saving color changes to database...')
       await handleCatalogueUpdate(catalogue.id, {
         settings: {
           ...(catalogue.settings as object || {}),
           customColors: colors
         } as any
       })
+      console.log('✅ Color changes saved successfully')
+    } else {
+      console.log('❌ No catalogue ID available for saving')
     }
   }
 
@@ -227,16 +243,21 @@ export default function CataloguePreviewPage() {
   }
 
   const handleFontChange = async (fontCustomization: FontCustomization) => {
+    console.log('🔤 handleFontChange called with:', fontCustomization)
     setFontCustomization(fontCustomization)
     
     // Save to database
     if (catalogue?.id) {
+      console.log('💾 Saving font changes to database...')
       await handleCatalogueUpdate(catalogue.id, {
         settings: {
           ...(catalogue.settings as object || {}),
           fontCustomization
         } as any
       })
+      console.log('✅ Font changes saved successfully')
+    } else {
+      console.log('❌ No catalogue ID available for saving')
     }
   }
 
@@ -275,46 +296,57 @@ export default function CataloguePreviewPage() {
   }, [catalogueId])
 
   // Initialize customizations from catalogue settings when catalogue is loaded
+  // This runs on initial page load to restore saved customizations
   useEffect(() => {
+    console.log('🔄 useEffect triggered for catalogue settings initialization')
     if (catalogue?.settings) {
       const settings = catalogue.settings as any
+      console.log('📋 Catalogue settings found:', settings)
       
       // Initialize custom colors from saved settings
       if (settings.customColors) {
+        console.log('🎨 Initializing custom colors:', settings.customColors)
         setCustomColors(settings.customColors)
       }
       
       // Initialize font customization from saved settings
       if (settings.fontCustomization) {
+        console.log('🔤 Initializing font customization:', settings.fontCustomization)
         setFontCustomization(settings.fontCustomization)
       }
       
       // Initialize spacing customization from saved settings
       if (settings.spacingCustomization) {
+        console.log('📏 Initializing spacing customization:', settings.spacingCustomization)
         setSpacingCustomization(settings.spacingCustomization)
       }
       
       // Initialize advanced styles from saved settings
       if (settings.advancedStyles) {
+        console.log('✨ Initializing advanced styles:', settings.advancedStyles)
         setAdvancedStyles(settings.advancedStyles)
       }
+    } else {
+      console.log('❌ No catalogue settings found')
     }
-  }, [catalogue])
+  }, [catalogue]) // Depend on the full catalogue object to ensure it runs when data is loaded
+
+
 
   // Reload catalogue data when the page becomes visible (e.g., when navigating back)
-  // but preserve edit mode state
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && catalogueId && !isEditMode) {
-        loadCatalogue()
-      }
-    }
+  // but preserve edit mode state - DISABLED to prevent customization resets
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (!document.hidden && catalogueId && !isEditMode) {
+  //       loadCatalogue()
+  //     }
+  //   }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [catalogueId, isEditMode])
+  //   document.addEventListener('visibilitychange', handleVisibilityChange)
+  //   return () => {
+  //     document.removeEventListener('visibilitychange', handleVisibilityChange)
+  //   }
+  // }, [catalogueId, isEditMode])
 
   if (isLoading) {
     return (

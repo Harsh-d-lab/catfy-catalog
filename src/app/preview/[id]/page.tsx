@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Mail, Phone, Globe, ExternalLink, Facebook, Twitter, Instagram, Linkedin, MapPin } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { getTemplateComponent, getTemplateById } from '@/components/catalog-templates'
+import { DEFAULT_FONT_CUSTOMIZATION, DEFAULT_SPACING_CUSTOMIZATION, DEFAULT_ADVANCED_STYLES } from '@/components/catalog-templates/modern-4page/components/StyleCustomizer'
 
 interface PreviewPageProps {
   params: {
@@ -106,6 +107,9 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           catalogue={catalogue}
           profile={profileData}
           themeColors={themeColors}
+          fontCustomization={settings.fontCustomization || DEFAULT_FONT_CUSTOMIZATION}
+          spacingCustomization={settings.spacingCustomization || DEFAULT_SPACING_CUSTOMIZATION}
+          advancedStyles={settings.advancedStyles || DEFAULT_ADVANCED_STYLES}
         />
       </div>
     )

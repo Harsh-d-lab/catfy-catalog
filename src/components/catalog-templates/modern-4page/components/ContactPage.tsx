@@ -2,6 +2,7 @@ import React from 'react'
 import { Profile, Catalogue } from '@prisma/client'
 import Image from 'next/image'
 import { ColorCustomization } from '../types/ColorCustomization'
+import { FontCustomization } from './StyleCustomizer'
 
 interface ContactPageProps {
   profile: Profile
@@ -12,9 +13,10 @@ interface ContactPageProps {
     accent: string
   }
   customColors?: ColorCustomization
+  fontCustomization?: FontCustomization
 }
 
-export function ContactPage({ profile, catalogue, themeColors, customColors }: ContactPageProps) {
+export function ContactPage({ profile, catalogue, themeColors, customColors, fontCustomization }: ContactPageProps) {
   const settings = catalogue?.settings as any || {}
   const contactDetails = settings.contactDetails || {}
   const socialMedia = settings.socialMedia || {}
@@ -79,11 +81,17 @@ export function ContactPage({ profile, catalogue, themeColors, customColors }: C
       <div className="text-center mb-16">
         <h1 
           className="text-5xl font-bold mb-4"
-          style={{ color: customColors?.textColors.title || '#3b82f6' }}
+          style={{ 
+            color: customColors?.textColors.title || '#3b82f6',
+            fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+          }}
         >
           Get in
         </h1>
-        <h2 className="text-6xl font-bold text-gray-900 mb-6">
+        <h2 
+          className="text-6xl font-bold text-gray-900 mb-6"
+          style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+        >
           Touch
         </h2>
         <div className="w-24 h-1 mx-auto" style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }} />
@@ -108,7 +116,10 @@ export function ContactPage({ profile, catalogue, themeColors, customColors }: C
                 />
               </div>
             )}
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 
+              className="text-3xl font-bold text-gray-900 mb-2"
+              style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+            >
               {profile.companyName}
             </h3>
 
@@ -118,7 +129,10 @@ export function ContactPage({ profile, catalogue, themeColors, customColors }: C
 
           {/* Contact Information */}
           <div className="">
-            <h4 className="text-xl font-bold text-gray-900 mb-6">
+            <h4 
+              className="text-xl font-bold text-gray-900 mb-6"
+              style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+            >
               Contact Information
             </h4>
             <div className="space-y-4">

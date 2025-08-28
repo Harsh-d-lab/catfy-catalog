@@ -61,7 +61,12 @@ export function ModernCatalogTemplate({
 }: ModernCatalogTemplateProps) {
 
   return (
-    <div className="bg-white">
+    <div 
+      className="bg-white catalog-template"
+      style={{
+        fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+      }}
+    >
       {/* Page 1: Cover */}
       <div className="min-h-screen flex items-center justify-center p-8 page-break">
         <CatalogCover 
@@ -84,6 +89,7 @@ export function ModernCatalogTemplate({
           products={catalogue.products}
           themeColors={themeColors}
           customColors={customColors}
+          fontCustomization={fontCustomization}
         />
       </div>
 
@@ -112,6 +118,7 @@ export function ModernCatalogTemplate({
           catalogue={catalogue}
           themeColors={themeColors}
           customColors={customColors}
+          fontCustomization={fontCustomization}
         />
       </div>
 

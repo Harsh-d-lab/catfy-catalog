@@ -151,7 +151,10 @@ export function CatalogCover({
         >
           <h1 
             className="text-6xl font-bold tracking-tight"
-            style={{ color: customColors?.textColors.title || '#3b82f6' }}
+            style={{ 
+              color: customColors?.textColors.title || '#3b82f6',
+              fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+            }}
           >
             CATALOG
           </h1>
@@ -254,7 +257,10 @@ export function CatalogCover({
         <div className="pt-8">
           <div 
             className="text-4xl font-bold"
-            style={{ color: customColors?.textColors.title || '#3b82f6' }}
+            style={{ 
+              color: customColors?.textColors.title || '#3b82f6',
+              fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+            }}
           >
             {currentYear}
           </div>
@@ -276,7 +282,10 @@ export function CatalogCover({
           {profile.website && (
             <p 
               className="text-gray-600"
-              style={{ color: customColors?.textColors.description || '#6b7280' }}
+              style={{ 
+                color: customColors?.textColors.description || '#6b7280',
+                fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+              }}
             >
               {profile.website.replace(/^https?:\/\//, '')}
             </p>

@@ -70,6 +70,7 @@ const updateCatalogueSchema = z.object({
       }).optional(),
     }).optional(),
     fontCustomization: z.object({
+      fontFamily: z.string().optional(),
       headingFont: z.string().optional(),
       bodyFont: z.string().optional(),
       headingSize: z.number().optional(),
@@ -78,19 +79,61 @@ const updateCatalogueSchema = z.object({
       bodyWeight: z.number().optional(),
       lineHeight: z.number().optional(),
       letterSpacing: z.number().optional(),
+      fontSize: z.object({
+        title: z.number().optional(),
+        companyName: z.number().optional(),
+        description: z.number().optional(),
+        productName: z.number().optional(),
+        productDescription: z.number().optional(),
+        categoryName: z.number().optional(),
+      }).optional(),
     }).optional(),
     spacingCustomization: z.object({
-      sectionSpacing: z.number().optional(),
-      elementSpacing: z.number().optional(),
-      padding: z.number().optional(),
-      margin: z.number().optional(),
-      borderRadius: z.number().optional(),
+      padding: z.object({
+        page: z.number().optional(),
+        productCard: z.number().optional(),
+        section: z.number().optional(),
+      }).optional(),
+      margin: z.object({
+        elements: z.number().optional(),
+        sections: z.number().optional(),
+      }).optional(),
+      gap: z.object({
+        products: z.number().optional(),
+        content: z.number().optional(),
+      }).optional(),
     }).optional(),
     advancedStyles: z.object({
-      shadows: z.boolean().optional(),
-      gradients: z.boolean().optional(),
-      animations: z.boolean().optional(),
-      customCSS: z.string().optional(),
+      borders: z.object({
+        productCard: z.object({
+          width: z.number().optional(),
+          style: z.string().optional(),
+          color: z.string().optional(),
+          radius: z.number().optional(),
+        }).optional(),
+        buttons: z.object({
+          width: z.number().optional(),
+          style: z.string().optional(),
+          color: z.string().optional(),
+          radius: z.number().optional(),
+        }).optional(),
+      }).optional(),
+      shadows: z.object({
+        productCard: z.object({
+          enabled: z.boolean().optional(),
+          blur: z.number().optional(),
+          spread: z.number().optional(),
+          color: z.string().optional(),
+          opacity: z.number().optional(),
+        }).optional(),
+        buttons: z.object({
+          enabled: z.boolean().optional(),
+          blur: z.number().optional(),
+          spread: z.number().optional(),
+          color: z.string().optional(),
+          opacity: z.number().optional(),
+        }).optional(),
+      }).optional(),
     }).optional(),
   }).optional(),
 })

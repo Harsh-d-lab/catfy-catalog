@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { SubscriptionStatus, AccountType } from '@prisma/client'

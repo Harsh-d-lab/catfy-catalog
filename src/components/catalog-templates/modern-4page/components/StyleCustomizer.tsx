@@ -188,6 +188,32 @@ const FONT_FAMILIES = [
   'Times New Roman, serif'
 ]
 
+// Function to get readable font name from font family string
+const getFontDisplayName = (fontValue: string): string => {
+  const fontMap: { [key: string]: string } = {
+    'Inter, sans-serif': 'Inter',
+    'Roboto, sans-serif': 'Roboto',
+    'Open Sans, sans-serif': 'Open Sans',
+    'Lato, sans-serif': 'Lato',
+    'Montserrat, sans-serif': 'Montserrat',
+    'Poppins, sans-serif': 'Poppins',
+    'Playfair Display, serif': 'Playfair Display',
+    'Merriweather, serif': 'Merriweather',
+    'Georgia, serif': 'Georgia',
+    'Times New Roman, serif': 'Times New Roman',
+    // Handle legacy CSS variable format for backward compatibility
+    'var(--font-inter)': 'Inter',
+    'var(--font-roboto)': 'Roboto',
+    'var(--font-open-sans)': 'Open Sans',
+    'var(--font-lato)': 'Lato',
+    'var(--font-montserrat)': 'Montserrat',
+    'var(--font-poppins)': 'Poppins',
+    'var(--font-playfair-display)': 'Playfair Display',
+    'var(--font-merriweather)': 'Merriweather'
+  }
+  return fontMap[fontValue] || fontValue.split(',')[0]
+}
+
 export function StyleCustomizer({
   isVisible,
   onToggle,
@@ -474,12 +500,12 @@ export function StyleCustomizer({
                   onValueChange={(value) => handleFontChange('fontFamily', value)}
                 >
                   <SelectTrigger className="h-7 text-xs">
-                    <SelectValue />
+                    <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily)} />
                   </SelectTrigger>
                   <SelectContent>
                     {FONT_FAMILIES.map((font) => (
                       <SelectItem key={font} value={font}>
-                        <span style={{ fontFamily: font }}>{font.split(',')[0]}</span>
+                        <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>

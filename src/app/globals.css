@@ -58,6 +58,31 @@
   }
 }
 
+/* Font family CSS variables */
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-roboto: 'Roboto', sans-serif;
+  --font-open-sans: 'Open Sans', sans-serif;
+  --font-lato: 'Lato', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-playfair-display: 'Playfair Display', serif;
+  --font-merriweather: 'Merriweather', serif;
+}
+
+/* Allow custom font families to be applied */
+.catalog-template {
+  /* Font family is set dynamically via inline styles */
+}
+
+/* Override Tailwind's font classes to inherit from parent */
+.catalog-template .font-bold,
+.catalog-template .font-medium,
+.catalog-template .font-light,
+.catalog-template .font-normal {
+  font-family: inherit;
+}
+
 /* Print styles for PDF generation */
 @media print {
   body {

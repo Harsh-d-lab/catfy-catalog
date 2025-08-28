@@ -694,39 +694,77 @@ export default function EditCataloguePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {catalogue.products.map((product) => (
-                  <Card key={product.id}>
+                  <Card key={product.id} className="group hover:shadow-lg transition-shadow">
+                    {product.imageUrl && (
+                      <div className="aspect-square relative">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded-t-lg"
+                        />
+                        
+                        {/* Overlay actions */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openProductDialog(product)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    )}
+                    
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">{product.name}</CardTitle>
+                          <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">{product.name}</CardTitle>
                           <CardDescription className="line-clamp-2">
                             {product.description || 'No description'}
                           </CardDescription>
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openProductDialog(product)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        
+                        {!product.imageUrl && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openProductDialog(product)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-lg font-semibold">{product.priceDisplay}</span>
+                          <span className="text-lg font-semibold">
+                            {product.priceDisplay === 'show' ? `$${product.price}` : 
+                             product.priceDisplay === 'contact' ? 'Contact for Price' : 'Price Hidden'}
+                          </span>
                           <Badge variant={product.isActive ? 'default' : 'secondary'}>
                             {product.isActive ? 'Available' : 'Unavailable'}
                           </Badge>
@@ -735,6 +773,20 @@ export default function EditCataloguePage() {
                           <p className="text-sm text-gray-600">
                             Category: {catalogue.categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
                           </p>
+                        )}
+                        {product.tags && product.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {product.tags.slice(0, 3).map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                            {product.tags.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{product.tags.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
                         )}
                       </div>
                     </CardContent>
@@ -871,13 +923,33 @@ export default function EditCataloguePage() {
               </div>
               
               <div>
-                <Label htmlFor="productImage">Product Image URL</Label>
-                <Input
-                  id="productImage"
-                  value={productForm.imageUrl}
-                  onChange={(e) => setProductForm(prev => ({ ...prev, imageUrl: e.target.value }))}
-                  placeholder="Enter image URL (optional)"
+                <Label className="text-sm font-medium mb-2 block">Product Image</Label>
+                <FileUpload
+                  uploadType="product"
+                  catalogueId={catalogueId}
+                  productId={editingProduct?.id}
+                  maxFiles={1}
+                  accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                  onUpload={(files) => {
+                    if (files.length > 0) {
+                      setProductForm(prev => ({ ...prev, imageUrl: files[0].url }))
+                    }
+                  }}
+                  onError={(error) => {
+                    setError(`Product image upload failed: ${error}`)
+                  }}
+                  className="mt-2"
                 />
+                {productForm.imageUrl && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-2">Current image:</p>
+                    <img 
+                      src={productForm.imageUrl} 
+                      alt="Product Image" 
+                      className="w-20 h-20 object-cover border rounded"
+                    />
+                  </div>
+                )}
               </div>
               
               <div>
