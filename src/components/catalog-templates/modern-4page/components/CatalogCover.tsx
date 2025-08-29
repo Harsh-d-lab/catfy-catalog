@@ -124,7 +124,7 @@ export function CatalogCover({
             <div className="w-24 h-24 mx-auto mb-6 rounded-lg overflow-hidden shadow-lg">
               <Image 
                 src={(catalogue.settings as any)?.mediaAssets?.logoUrl || profile.avatarUrl} 
-                alt={profile.companyName || 'Company Logo'}
+                alt={(catalogue.settings as any)?.companyInfo?.companyName || profile.companyName || 'Company Logo'}
                 width={96}
                 height={96}
                 className="w-full h-full object-cover"
@@ -135,7 +135,7 @@ export function CatalogCover({
               className="w-24 h-24 mx-auto mb-6 rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg"
               style={{ backgroundColor: customColors?.textColors.title || '#3b82f6' }}
             >
-              {(profile.companyName || profile.fullName || 'C').charAt(0).toUpperCase()}
+              {((catalogue.settings as any)?.companyInfo?.companyName || profile.companyName || profile.fullName || 'C').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
@@ -279,8 +279,20 @@ export function CatalogCover({
               fontWeight: fontCustomization?.fontWeight?.companyName || '600'
             }}
           >
-            by {profile.companyName || profile.fullName || 'Your Company'}
+            by {(catalogue.settings as any)?.companyInfo?.companyName || profile.companyName || profile.fullName || 'Your Company'}
           </p>
+          {(catalogue.settings as any)?.companyInfo?.companyDescription && (
+            <p 
+              className="text-sm"
+              style={{ 
+                color: customColors?.textColors.description || '#6b7280',
+                fontFamily: fontCustomization?.fontFamily?.description || 'Inter, sans-serif',
+                fontWeight: fontCustomization?.fontWeight?.description || '400'
+              }}
+            >
+              {(catalogue.settings as any)?.companyInfo?.companyDescription}
+            </p>
+          )}
           {profile.website && (
             <p 
               className="text-gray-600"

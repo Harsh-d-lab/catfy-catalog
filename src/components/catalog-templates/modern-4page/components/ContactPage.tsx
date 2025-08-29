@@ -113,7 +113,7 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
               <div className="mb-6">
                 <Image
                   src={profile.avatarUrl}
-                  alt={`${profile.companyName} logo`}
+                  alt={`${(catalogue?.settings as any)?.companyInfo?.companyName || profile.companyName} logo`}
                   width={120}
                   height={120}
                   className="mx-auto lg:mx-0 rounded-lg shadow-lg"
@@ -127,8 +127,13 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
                 fontWeight: fontCustomization?.fontWeight?.companyName || '700'
               }}
             >
-              {profile.companyName}
+              {(catalogue?.settings as any)?.companyInfo?.companyName || profile.companyName}
             </h3>
+            {(catalogue?.settings as any)?.companyInfo?.companyDescription && (
+              <p className="text-gray-600 mt-2">
+                {(catalogue?.settings as any)?.companyInfo?.companyDescription}
+              </p>
+            )}
 
           </div>
 
@@ -270,7 +275,7 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
       {/* Bottom Footer */}
       <div className="mt-16 pt-8 border-t border-gray-200 text-center">
         <p className="text-gray-600">
-          © {new Date().getFullYear()} {profile.companyName}. All rights reserved.
+          © {new Date().getFullYear()} {(catalogue?.settings as any)?.companyInfo?.companyName || profile.companyName}. All rights reserved.
         </p>
         {profile.website && (
           <p className="text-sm text-gray-500 mt-2">

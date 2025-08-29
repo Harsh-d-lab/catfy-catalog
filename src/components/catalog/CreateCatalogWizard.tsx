@@ -445,6 +445,43 @@ export function CreateCatalogWizard({ onComplete }: CreateCatalogWizardProps) {
 
           {currentStep === 3 && (
             <div className="space-y-6">
+              {/* Company Information */}
+              <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2 text-xl text-gray-800">
+                    <Settings className="h-6 w-6" />
+                    Company Information
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Add your company details to personalize your catalogue
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="companyName">Company Name</Label>
+                    <Input
+                      id="companyName"
+                      value={data.settings.companyInfo?.companyName || ''}
+                      onChange={(e) => updateData('settings.companyInfo.companyName', e.target.value)}
+                      placeholder="Enter your company name"
+                      className="mt-2"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="companyDescription">Company Description</Label>
+                    <Textarea
+                      id="companyDescription"
+                      value={data.settings.companyInfo?.companyDescription || ''}
+                      onChange={(e) => updateData('settings.companyInfo.companyDescription', e.target.value)}
+                      placeholder="Describe your company and what you do"
+                      rows={3}
+                      className="mt-2"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Media & Assets */}
               <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">

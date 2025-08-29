@@ -75,6 +75,10 @@ interface Catalogue {
   categories: Category[]
   products: Product[]
   settings?: {
+    companyInfo?: {
+      companyName?: string
+      companyDescription?: string
+    }
     contactDetails?: {
       email?: string
       phone?: string
@@ -1329,6 +1333,51 @@ export default function EditCataloguePage() {
                         />
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Company Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Company Information</h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="companyName">Company Name</Label>
+                    <Input
+                      id="companyName"
+                      value={catalogue?.settings?.companyInfo?.companyName || ''}
+                      onChange={(e) => setCatalogue(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          companyInfo: {
+                            ...prev.settings?.companyInfo,
+                            companyName: e.target.value
+                          }
+                        }
+                      } : null)}
+                      placeholder="Enter your company name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="companyDescription">Company Description</Label>
+                    <Textarea
+                      id="companyDescription"
+                      value={catalogue?.settings?.companyInfo?.companyDescription || ''}
+                      onChange={(e) => setCatalogue(prev => prev ? {
+                        ...prev,
+                        settings: {
+                          ...prev.settings,
+                          companyInfo: {
+                            ...prev.settings?.companyInfo,
+                            companyDescription: e.target.value
+                          }
+                        }
+                      } : null)}
+                      placeholder="Describe your company"
+                      rows={3}
+                    />
                   </div>
                 </div>
               </div>
