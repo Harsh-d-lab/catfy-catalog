@@ -191,7 +191,12 @@ function SortableProductItem({
           <div className="flex items-center mb-2">
             <span 
               className="px-2 py-1 text-xs font-medium text-white rounded-full"
-              style={{ backgroundColor: product.category.color || customColors?.textColors.title || '#3b82f6' }}
+              style={{ 
+                backgroundColor: product.category.color || customColors?.textColors.title || '#3b82f6',
+                fontFamily: fontCustomization?.fontFamily?.categoryName || 'Inter, sans-serif',
+                fontSize: `${fontCustomization?.fontSize?.categoryName || 12}px`,
+                fontWeight: fontCustomization?.fontWeight?.categoryName || '500'
+              }}
             >
               {product.category.name}
             </span>
@@ -232,7 +237,7 @@ function SortableProductItem({
             }`}
             style={{ 
               color: customColors?.textColors.productName || '#111827',
-              fontFamily: fontCustomization?.fontFamily || 'inherit',
+              fontFamily: fontCustomization?.fontFamily?.productName || 'Inter, sans-serif',
               fontSize: `${fontCustomization?.fontSize?.productName || 18}px`,
               fontWeight: fontCustomization?.fontWeight?.productName || 'bold'
             }}
@@ -280,7 +285,7 @@ function SortableProductItem({
               }`}
               style={{ 
                 color: customColors?.textColors.productDescription || '#4b5563',
-                fontFamily: fontCustomization?.fontFamily || 'inherit',
+                fontFamily: fontCustomization?.fontFamily?.productDescription || 'Inter, sans-serif',
                 fontSize: `${fontCustomization?.fontSize?.productDescription || 14}px`,
                 fontWeight: fontCustomization?.fontWeight?.productDescription || 'normal'
               }}
@@ -554,7 +559,12 @@ export function ProductGrid({
                   <div className="flex items-center mb-2">
                     <span 
                       className="px-2 py-1 text-xs font-medium text-white rounded-full"
-                      style={{ backgroundColor: product.category.color || customColors?.textColors.title || '#3b82f6' }}
+                      style={{ 
+                        backgroundColor: product.category.color || customColors?.textColors.title || '#3b82f6',
+                        fontFamily: fontCustomization?.fontFamily?.categoryName || 'Inter, sans-serif',
+                        fontSize: `${fontCustomization?.fontSize?.categoryName || 12}px`,
+                        fontWeight: fontCustomization?.fontWeight?.categoryName || '500'
+                      }}
                     >
                       {product.category.name}
                     </span>
@@ -565,7 +575,7 @@ export function ProductGrid({
                   className="font-bold text-lg leading-tight"
                   style={{ 
                     color: customColors?.textColors.productName || '#111827',
-                    fontFamily: fontCustomization?.fontFamily || 'inherit',
+                    fontFamily: fontCustomization?.fontFamily?.productName || 'Inter, sans-serif',
                     fontSize: `${fontCustomization?.fontSize?.productName || 18}px`,
                     fontWeight: fontCustomization?.fontWeight?.productName || 'bold'
                   }}
@@ -578,7 +588,7 @@ export function ProductGrid({
                     className="text-sm line-clamp-2"
                     style={{ 
                       color: customColors?.textColors.productDescription || '#4b5563',
-                      fontFamily: fontCustomization?.fontFamily || 'inherit',
+                      fontFamily: fontCustomization?.fontFamily?.productDescription || 'Inter, sans-serif',
                       fontSize: `${fontCustomization?.fontSize?.productDescription || 14}px`,
                       fontWeight: fontCustomization?.fontWeight?.productDescription || 'normal'
                     }}

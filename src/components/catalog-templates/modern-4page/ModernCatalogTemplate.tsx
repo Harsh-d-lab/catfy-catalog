@@ -63,9 +63,6 @@ export function ModernCatalogTemplate({
   return (
     <div 
       className="bg-white catalog-template"
-      style={{
-        fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
-      }}
     >
       {/* Page 1: Cover */}
       <div className="min-h-screen flex items-center justify-center p-8 page-break">

@@ -35,14 +35,18 @@ export function TableOfContents({ categories, products, themeColors, customColor
           className="text-5xl font-bold mb-4"
           style={{ 
             color: customColors?.textColors.title || '#3b82f6',
-            fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+            fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+            fontWeight: fontCustomization?.fontWeight?.title || '700'
           }}
         >
           Table of
         </h1>
         <h2 
           className="text-6xl font-bold text-gray-900 mb-6"
-          style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+          style={{ 
+            fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+            fontWeight: fontCustomization?.fontWeight?.title || '700'
+          }}
         >
           Content
         </h2>
@@ -87,7 +91,11 @@ export function TableOfContents({ categories, products, themeColors, customColor
             <div className="space-y-3">
               <h3 
                 className="text-2xl font-bold text-gray-900 uppercase tracking-wide"
-                style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+                style={{ 
+                  fontFamily: fontCustomization?.fontFamily?.categoryName || 'Inter, sans-serif',
+                  fontSize: `${fontCustomization?.fontSize?.categoryName || 24}px`,
+                  fontWeight: fontCustomization?.fontWeight?.categoryName || '700'
+                }}
               >
                 {category.name}
               </h3>
@@ -95,7 +103,8 @@ export function TableOfContents({ categories, products, themeColors, customColor
                 className="text-lg font-medium" 
                 style={{ 
                   color: customColors?.textColors.title || '#3b82f6',
-                  fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+                  fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+                  fontWeight: fontCustomization?.fontWeight?.title || '500'
                 }}
               >
                 CATEGORY

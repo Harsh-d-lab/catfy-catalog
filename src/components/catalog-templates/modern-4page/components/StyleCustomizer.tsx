@@ -21,13 +21,21 @@ import {
 import { ColorCustomization } from '../types/ColorCustomization'
 
 interface FontCustomization {
-  fontFamily: string
+  fontFamily: {
+    title: string
+    description: string
+    productName: string
+    productDescription: string
+    companyName: string
+    categoryName: string
+  }
   fontSize: {
     title: number
     description: number
     productName: number
     productDescription: number
     companyName: number
+    categoryName: number
   }
   fontWeight: {
     title: string
@@ -35,6 +43,7 @@ interface FontCustomization {
     productName: string
     productDescription: string
     companyName: string
+    categoryName: string
   }
 }
 
@@ -101,20 +110,29 @@ interface StyleCustomizerProps {
 }
 
 const DEFAULT_FONT_CUSTOMIZATION: FontCustomization = {
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: {
+    title: 'Inter, sans-serif',
+    description: 'Inter, sans-serif',
+    productName: 'Inter, sans-serif',
+    productDescription: 'Inter, sans-serif',
+    companyName: 'Inter, sans-serif',
+    categoryName: 'Inter, sans-serif'
+  },
   fontSize: {
     title: 24,
     description: 16,
     productName: 18,
     productDescription: 14,
-    companyName: 20
+    companyName: 20,
+    categoryName: 22
   },
   fontWeight: {
     title: '700',
     description: '400',
     productName: '600',
     productDescription: '400',
-    companyName: '600'
+    companyName: '600',
+    categoryName: '600'
   }
 }
 
@@ -492,81 +510,262 @@ export function StyleCustomizer({
           </TabsContent>
 
           <TabsContent value="typography" className="space-y-2">
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-700">Font Family</Label>
-                <Select
-                  value={fontCustomization.fontFamily}
-                  onValueChange={(value) => handleFontChange('fontFamily', value)}
-                >
-                  <SelectTrigger className="h-7 text-xs">
-                    <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily)} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FONT_FAMILIES.map((font) => (
-                      <SelectItem key={font} value={font}>
-                        <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-700">Font Family</h3>
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-xs text-gray-600">Title</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.title || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.title', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.title || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Company Name</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.companyName || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.companyName', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.companyName || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Name</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.productName || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.productName', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.productName || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Description</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.productDescription || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.productDescription', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.productDescription || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Description</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.description || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.description', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.description || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Category Name</Label>
+                    <Select
+                      value={fontCustomization.fontFamily?.categoryName || 'Inter, sans-serif'}
+                      onValueChange={(value) => handleFontChange('fontFamily.categoryName', value)}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder={getFontDisplayName(fontCustomization.fontFamily?.categoryName || 'Inter, sans-serif')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONT_FAMILIES.map((font) => (
+                          <SelectItem key={font} value={font}>
+                            <span style={{ fontFamily: font }}>{getFontDisplayName(font)}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-2">
-                <div>
-                  <Label className="text-xs text-gray-600">Title: {fontCustomization.fontSize?.title || 24}px</Label>
-                  <Slider
-                    value={[fontCustomization.fontSize?.title || 24]}
-                    onValueChange={([value]) => handleFontChange('fontSize.title', value)}
-                    min={16}
-                    max={48}
-                    step={2}
-                    className="mt-1"
-                  />
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-700">Font Size</h3>
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-xs text-gray-600">Title: {fontCustomization.fontSize?.title || 24}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.title || 24]}
+                      onValueChange={([value]) => handleFontChange('fontSize.title', value)}
+                      min={16}
+                      max={48}
+                      step={2}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Company Name: {fontCustomization.fontSize?.companyName || 20}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.companyName || 20]}
+                      onValueChange={([value]) => handleFontChange('fontSize.companyName', value)}
+                      min={14}
+                      max={32}
+                      step={1}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Name: {fontCustomization.fontSize?.productName || 18}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.productName || 18]}
+                      onValueChange={([value]) => handleFontChange('fontSize.productName', value)}
+                      min={12}
+                      max={28}
+                      step={1}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Description: {fontCustomization.fontSize?.productDescription || 14}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.productDescription || 14]}
+                      onValueChange={([value]) => handleFontChange('fontSize.productDescription', value)}
+                      min={10}
+                      max={20}
+                      step={1}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Description: {fontCustomization.fontSize?.description || 16}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.description || 16]}
+                      onValueChange={([value]) => handleFontChange('fontSize.description', value)}
+                      min={12}
+                      max={24}
+                      step={1}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Category Name: {fontCustomization.fontSize?.categoryName || 22}px</Label>
+                    <Slider
+                      value={[fontCustomization.fontSize?.categoryName || 22]}
+                      onValueChange={([value]) => handleFontChange('fontSize.categoryName', value)}
+                      min={14}
+                      max={32}
+                      step={1}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-xs text-gray-600">Company Name: {fontCustomization.fontSize?.companyName || 20}px</Label>
-                  <Slider
-                    value={[fontCustomization.fontSize?.companyName || 20]}
-                    onValueChange={([value]) => handleFontChange('fontSize.companyName', value)}
-                    min={14}
-                    max={32}
-                    step={1}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-600">Product Name: {fontCustomization.fontSize?.productName || 18}px</Label>
-                  <Slider
-                    value={[fontCustomization.fontSize?.productName || 18]}
-                    onValueChange={([value]) => handleFontChange('fontSize.productName', value)}
-                    min={12}
-                    max={28}
-                    step={1}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-600">Product Description: {fontCustomization.fontSize?.productDescription || 14}px</Label>
-                  <Slider
-                    value={[fontCustomization.fontSize?.productDescription || 14]}
-                    onValueChange={([value]) => handleFontChange('fontSize.productDescription', value)}
-                    min={10}
-                    max={20}
-                    step={1}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-600">Description: {fontCustomization.fontSize?.description || 16}px</Label>
-                  <Slider
-                    value={[fontCustomization.fontSize?.description || 16]}
-                    onValueChange={([value]) => handleFontChange('fontSize.description', value)}
-                    min={12}
-                    max={24}
-                    step={1}
-                    className="mt-1"
-                  />
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-700">Font Weight</h3>
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-xs text-gray-600">Title: {fontCustomization.fontWeight?.title || '700'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.title || '700')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.title', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Company Name: {fontCustomization.fontWeight?.companyName || '600'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.companyName || '600')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.companyName', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Name: {fontCustomization.fontWeight?.productName || '600'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.productName || '600')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.productName', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Product Description: {fontCustomization.fontWeight?.productDescription || '400'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.productDescription || '400')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.productDescription', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Description: {fontCustomization.fontWeight?.description || '400'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.description || '400')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.description', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600">Category Name: {fontCustomization.fontWeight?.categoryName || '600'}</Label>
+                    <Slider
+                      value={[parseInt(fontCustomization.fontWeight?.categoryName || '600')]}
+                      onValueChange={([value]) => handleFontChange('fontWeight.categoryName', value.toString())}
+                      min={100}
+                      max={900}
+                      step={100}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

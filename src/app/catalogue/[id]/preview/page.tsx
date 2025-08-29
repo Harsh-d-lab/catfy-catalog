@@ -53,7 +53,7 @@ export default function CataloguePreviewPage() {
       categorySection: '#f3f4f6'
     }
   })
-  const [fontCustomization, setFontCustomization] = useState<FontCustomization>(DEFAULT_FONT_CUSTOMIZATION)
+  const [fontCustomization, setFontCustomization] = useState<FontCustomization | null>(null)
   const [spacingCustomization, setSpacingCustomization] = useState<SpacingCustomization>(DEFAULT_SPACING_CUSTOMIZATION)
   const [advancedStyles, setAdvancedStyles] = useState<AdvancedStyleCustomization>(DEFAULT_ADVANCED_STYLES)
   
@@ -242,9 +242,9 @@ export default function CataloguePreviewPage() {
     })
   }
 
-  const handleFontChange = async (fontCustomization: FontCustomization) => {
-    console.log('🔤 handleFontChange called with:', fontCustomization)
-    setFontCustomization(fontCustomization)
+  const handleFontChange = async (newFontCustomization: FontCustomization) => {
+    console.log('🔤 handleFontChange called with:', newFontCustomization)
+    setFontCustomization(newFontCustomization)
     
     // Save to database
     if (catalogue?.id) {
@@ -252,7 +252,7 @@ export default function CataloguePreviewPage() {
       await handleCatalogueUpdate(catalogue.id, {
         settings: {
           ...(catalogue.settings as object || {}),
-          fontCustomization
+          fontCustomization: newFontCustomization
         } as any
       })
       console.log('✅ Font changes saved successfully')
@@ -309,10 +309,13 @@ export default function CataloguePreviewPage() {
         setCustomColors(settings.customColors)
       }
       
-      // Initialize font customization from saved settings
+      // Initialize font customization from saved settings or defaults
       if (settings.fontCustomization) {
-        console.log('🔤 Initializing font customization:', settings.fontCustomization)
+        console.log('🔤 Initializing font customization from saved settings:', settings.fontCustomization)
         setFontCustomization(settings.fontCustomization)
+      } else {
+        console.log('🔤 No saved fontCustomization found, using defaults:', DEFAULT_FONT_CUSTOMIZATION)
+        setFontCustomization(DEFAULT_FONT_CUSTOMIZATION)
       }
       
       // Initialize spacing customization from saved settings
@@ -327,7 +330,9 @@ export default function CataloguePreviewPage() {
         setAdvancedStyles(settings.advancedStyles)
       }
     } else {
-      console.log('❌ No catalogue settings found')
+      console.log('❌ No catalogue settings found, using defaults')
+      // Set defaults when no settings exist
+      setFontCustomization(DEFAULT_FONT_CUSTOMIZATION)
     }
   }, [catalogue]) // Depend on the full catalogue object to ensure it runs when data is loaded
 
@@ -539,7 +544,7 @@ export default function CataloguePreviewPage() {
                   onCatalogueUpdate={handleCatalogueUpdate}
                   onProductUpdate={handleProductUpdate}
                   customColors={customColors}
-                  fontCustomization={fontCustomization}
+                  fontCustomization={fontCustomization || DEFAULT_FONT_CUSTOMIZATION}
                   spacingCustomization={spacingCustomization}
                   advancedStyles={advancedStyles}
                 />
@@ -564,7 +569,7 @@ export default function CataloguePreviewPage() {
                 onToggle={() => {}}
                 customColors={customColors}
                 onColorsChange={handleColorChange}
-                fontCustomization={fontCustomization}
+                fontCustomization={fontCustomization || DEFAULT_FONT_CUSTOMIZATION}
                 onFontChange={handleFontChange}
                 spacingCustomization={spacingCustomization}
                 onSpacingChange={handleSpacingChange}

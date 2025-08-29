@@ -70,7 +70,31 @@ const updateCatalogueSchema = z.object({
       }).optional(),
     }).optional(),
     fontCustomization: z.object({
-      fontFamily: z.string().optional(),
+      fontFamily: z.object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+        productName: z.string().optional(),
+        productDescription: z.string().optional(),
+        companyName: z.string().optional(),
+        categoryName: z.string().optional(),
+      }).optional(),
+      fontSize: z.object({
+        title: z.number().optional(),
+        description: z.number().optional(),
+        productName: z.number().optional(),
+        productDescription: z.number().optional(),
+        companyName: z.number().optional(),
+        categoryName: z.number().optional(),
+      }).optional(),
+      fontWeight: z.object({
+        title: z.string().optional(),
+        description: z.string().optional(),
+        productName: z.string().optional(),
+        productDescription: z.string().optional(),
+        companyName: z.string().optional(),
+        categoryName: z.string().optional(),
+      }).optional(),
+      // Legacy fields for backward compatibility
       headingFont: z.string().optional(),
       bodyFont: z.string().optional(),
       headingSize: z.number().optional(),
@@ -79,14 +103,6 @@ const updateCatalogueSchema = z.object({
       bodyWeight: z.number().optional(),
       lineHeight: z.number().optional(),
       letterSpacing: z.number().optional(),
-      fontSize: z.object({
-        title: z.number().optional(),
-        companyName: z.number().optional(),
-        description: z.number().optional(),
-        productName: z.number().optional(),
-        productDescription: z.number().optional(),
-        categoryName: z.number().optional(),
-      }).optional(),
     }).optional(),
     spacingCustomization: z.object({
       padding: z.object({

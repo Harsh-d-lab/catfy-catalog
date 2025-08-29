@@ -153,7 +153,8 @@ export function CatalogCover({
             className="text-6xl font-bold tracking-tight"
             style={{ 
               color: customColors?.textColors.title || '#3b82f6',
-              fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+              fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+              fontWeight: fontCustomization?.fontWeight?.title || '700'
             }}
           >
             CATALOG
@@ -192,7 +193,7 @@ export function CatalogCover({
               }`}
               style={{ 
                 color: customColors?.textColors.title || '#1f2937',
-                fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
+                fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
                 fontSize: `${fontCustomization?.fontSize?.title || 24}px`,
                 fontWeight: fontCustomization?.fontWeight?.title || '600'
               }}
@@ -239,7 +240,7 @@ export function CatalogCover({
               }`}
               style={{ 
                 color: customColors?.textColors.description || '#6b7280',
-                fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
+                fontFamily: fontCustomization?.fontFamily?.description || 'Inter, sans-serif',
                 fontSize: `${fontCustomization?.fontSize?.description || 16}px`,
                 fontWeight: fontCustomization?.fontWeight?.description || '400'
               }}
@@ -259,7 +260,8 @@ export function CatalogCover({
             className="text-4xl font-bold"
             style={{ 
               color: customColors?.textColors.title || '#3b82f6',
-              fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+              fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+              fontWeight: fontCustomization?.fontWeight?.title || '700'
             }}
           >
             {currentYear}
@@ -272,7 +274,7 @@ export function CatalogCover({
             className="font-medium"
             style={{ 
               color: customColors?.textColors.companyName || '#374151',
-              fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif',
+              fontFamily: fontCustomization?.fontFamily?.companyName || 'Inter, sans-serif',
               fontSize: `${fontCustomization?.fontSize?.companyName || 20}px`,
               fontWeight: fontCustomization?.fontWeight?.companyName || '600'
             }}
@@ -284,7 +286,8 @@ export function CatalogCover({
               className="text-gray-600"
               style={{ 
                 color: customColors?.textColors.description || '#6b7280',
-                fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+                fontFamily: fontCustomization?.fontFamily?.description || 'Inter, sans-serif',
+                fontWeight: fontCustomization?.fontWeight?.description || '400'
               }}
             >
               {profile.website.replace(/^https?:\/\//, '')}

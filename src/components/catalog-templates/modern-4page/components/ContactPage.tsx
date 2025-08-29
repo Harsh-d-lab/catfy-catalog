@@ -83,14 +83,18 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
           className="text-5xl font-bold mb-4"
           style={{ 
             color: customColors?.textColors.title || '#3b82f6',
-            fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif'
+            fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+            fontWeight: fontCustomization?.fontWeight?.title || '700'
           }}
         >
           Get in
         </h1>
         <h2 
           className="text-6xl font-bold text-gray-900 mb-6"
-          style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+          style={{ 
+            fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+            fontWeight: fontCustomization?.fontWeight?.title || '700'
+          }}
         >
           Touch
         </h2>
@@ -118,7 +122,10 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
             )}
             <h3 
               className="text-3xl font-bold text-gray-900 mb-2"
-              style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+              style={{ 
+                fontFamily: fontCustomization?.fontFamily?.companyName || 'Inter, sans-serif',
+                fontWeight: fontCustomization?.fontWeight?.companyName || '700'
+              }}
             >
               {profile.companyName}
             </h3>
@@ -131,7 +138,10 @@ export function ContactPage({ profile, catalogue, themeColors, customColors, fon
           <div className="">
             <h4 
               className="text-xl font-bold text-gray-900 mb-6"
-              style={{ fontFamily: fontCustomization?.fontFamily || 'Inter, sans-serif' }}
+              style={{ 
+                fontFamily: fontCustomization?.fontFamily?.title || 'Inter, sans-serif',
+                fontWeight: fontCustomization?.fontWeight?.title || '700'
+              }}
             >
               Contact Information
             </h4>
