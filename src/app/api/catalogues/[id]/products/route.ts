@@ -86,9 +86,10 @@ export async function GET(
       },
     })
 
-    // Transform products to handle imageUrl fallback
+    // Transform products to handle imageUrl fallback and convert Decimal to number
     const transformedProducts = products.map(product => ({
       ...product,
+      price: product.price ? Number(product.price) : null, // Convert Decimal to number
       imageUrl: product.imageUrl || (product.images && product.images.length > 0 ? product.images[0] : null)
     }))
 

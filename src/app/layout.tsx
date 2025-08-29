@@ -3,6 +3,7 @@ import { Inter, Roboto, Open_Sans, Lato, Montserrat, Poppins, Playfair_Display, 
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const roboto = Roboto({ subsets: ['latin'], weight: ['300', '400', '500', '700'], variable: '--font-roboto' })
@@ -64,6 +65,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
+          <SonnerToaster position="top-right" richColors />
         </Providers>
       </body>
     </html>

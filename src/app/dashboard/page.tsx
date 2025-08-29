@@ -153,7 +153,7 @@ export default function DashboardPage() {
       return
     }
 
-    const shareUrl = `${window.location.origin}/catalogue/${catalogue.id}/public`
+    const shareUrl = `${window.location.origin}/preview/${catalogue.id}`
     
     try {
       await navigator.clipboard.writeText(shareUrl)
@@ -210,9 +210,9 @@ export default function DashboardPage() {
         } else {
           // JSON response with download URL for authenticated users
           const data = await response.json()
-          if (data.downloadUrl) {
+          if (data.export?.downloadUrl) {
             // Open download URL in new tab
-            window.open(data.downloadUrl, '_blank')
+            window.open(data.export.downloadUrl, '_blank')
             toast.success('PDF exported successfully!', { id: 'pdf-export' })
           } else {
             throw new Error('No download URL received')

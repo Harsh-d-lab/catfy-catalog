@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { StyleCustomizer, DEFAULT_FONT_CUSTOMIZATION, DEFAULT_SPACING_CUSTOMIZATION, DEFAULT_ADVANCED_STYLES, FontCustomization, SpacingCustomization, AdvancedStyleCustomization } from '@/components/catalog-templates/modern-4page/components/StyleCustomizer'
 import { ColorCustomization } from '@/components/catalog-templates/modern-4page/types/ColorCustomization'
 import { Catalogue as PrismaCatalogue, Product as PrismaProduct, Category as PrismaCategory } from '@prisma/client'
+import { toast } from 'sonner'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 type Catalogue = PrismaCatalogue & {
   categories: PrismaCategory[]
@@ -59,6 +61,91 @@ export default function CataloguePreviewPage() {
   
   const params = useParams()
   const catalogueId = params.id as string
+  const { canExport } = useSubscription()
+
+  const shareCatalogue = async () => {
+    if (!catalogue) return
+    
+    if (!catalogue.isPublic) {
+      toast.error('Only public catalogues can be shared')
+      return
+    }
+
+    const shareUrl = `${window.location.origin}/preview/${catalogue.id}`
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Share link copied to clipboard!')
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea')
+      textArea.value = shareUrl
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      toast.success('Share link copied to clipboard!')
+    }
+  }
+
+  const exportToPDF = async () => {
+    if (!catalogue) return
+    
+    if (!canExport()) {
+      toast.error('You have reached your export limit. Please upgrade your plan to export more catalogues.')
+      return
+    }
+
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-export' })
+      
+      const response = await fetch('/api/export/pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          catalogueId: catalogue.id,
+          theme: 'modern',
+          format: 'A4',
+          orientation: 'portrait'
+        }),
+      })
+
+      if (response.ok) {
+        const contentType = response.headers.get('content-type')
+        
+        if (contentType && contentType.includes('application/pdf')) {
+          // Direct PDF download for public catalogues
+          const blob = await response.blob()
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `catalogue-${catalogue.id}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+          toast.success('PDF exported successfully!', { id: 'pdf-export' })
+        } else {
+          // JSON response with download URL for authenticated users
+          const data = await response.json()
+          if (data.export?.downloadUrl) {
+            // Open download URL in new tab
+            window.open(data.export.downloadUrl, '_blank')
+            toast.success('PDF exported successfully!', { id: 'pdf-export' })
+          } else {
+            throw new Error('No download URL received')
+          }
+        }
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to export PDF')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to export PDF', { id: 'pdf-export' })
+    }
+  }
 
   const loadCatalogue = async () => {
     try {
@@ -481,11 +568,11 @@ export default function CataloguePreviewPage() {
                   Full Edit
                 </Link>
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={shareCatalogue}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={exportToPDF} disabled={!canExport()}>
                 <Download className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>
