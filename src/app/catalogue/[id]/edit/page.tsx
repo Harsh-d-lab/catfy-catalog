@@ -325,6 +325,9 @@ export default function EditCataloguePage() {
         productData.categoryId = productForm.categoryId
       }
       
+      console.log('Saving product with data:', productData)
+      console.log('Product form state:', productForm)
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -333,10 +336,16 @@ export default function EditCataloguePage() {
         body: JSON.stringify(productData)
       })
       
+      console.log('Response status:', response.status)
+      
       if (!response.ok) {
         const errorData = await response.json()
+        console.log('Error response:', errorData)
         throw new Error(errorData.error || 'Failed to save product')
       }
+      
+      const responseData = await response.json()
+      console.log('Success response data:', responseData)
       
       toast.success(`Product ${editingProduct ? 'updated' : 'created'} successfully!`)
       setShowProductDialog(false)
@@ -694,102 +703,110 @@ export default function EditCataloguePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {catalogue.products.map((product) => (
-                  <Card key={product.id} className="group hover:shadow-lg transition-shadow">
-                    {product.imageUrl && (
-                      <div className="aspect-square relative">
+                  <Card key={product.id} className="group hover:shadow-lg transition-shadow overflow-hidden">
+                    {/* Image Section - Always show, with fallback */}
+                    <div className="aspect-[4/3] relative bg-gray-100">
+                      {product.imageUrl ? (
                         <img
                           src={product.imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover rounded-t-lg"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }}
                         />
-                        
-                        {/* Overlay actions */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openProductDialog(product)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                      ) : null}
+                      
+                      {/* Fallback placeholder */}
+                      <div className={`absolute inset-0 flex items-center justify-center bg-gray-100 ${product.imageUrl ? 'hidden' : 'flex'}`}>
+                        <div className="text-center text-gray-400">
+                          <Package className="h-12 w-12 mx-auto mb-2" />
+                          <p className="text-sm">No Image</p>
                         </div>
                       </div>
-                    )}
+                      
+                      {/* Overlay actions */}
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="sm" className="h-8 w-8 p-0 bg-white/90 hover:bg-white">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openProductDialog(product)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      {/* Status badge */}
+                      <div className="absolute top-2 left-2">
+                        <Badge variant={product.isActive ? 'default' : 'secondary'} className="bg-white/90 text-gray-800">
+                          {product.isActive ? 'Available' : 'Unavailable'}
+                        </Badge>
+                      </div>
+                    </div>
                     
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">{product.name}</CardTitle>
-                          <CardDescription className="line-clamp-2">
-                            {product.description || 'No description'}
-                          </CardDescription>
-                        </div>
-                        
-                        {!product.imageUrl && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openProductDialog(product)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+                    {/* Content Section */}
+                    <div className="p-4 space-y-3">
+                      {/* Title and Description */}
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                          {product.description || 'No description available'}
+                        </p>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-semibold">
-                            {product.priceDisplay === 'show' ? `$${product.price}` : 
-                             product.priceDisplay === 'contact' ? 'Contact for Price' : 'Price Hidden'}
-                          </span>
-                          <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                            {product.isActive ? 'Available' : 'Unavailable'}
+                      
+                      {/* Price */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xl font-bold text-gray-900">
+                          {product.priceDisplay === 'show' && product.price ? (
+                            `$${Number(product.price).toFixed(2)}`
+                          ) : product.priceDisplay === 'contact' ? (
+                            <span className="text-blue-600 text-base font-medium">Contact for Price</span>
+                          ) : (
+                            <span className="text-gray-500 text-base font-medium">Price Hidden</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Category */}
+                      {product.categoryId && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Category:</span>
+                          <Badge variant="outline" className="text-xs">
+                            {catalogue.categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
                           </Badge>
                         </div>
-                        {product.categoryId && (
-                          <p className="text-sm text-gray-600">
-                            Category: {catalogue.categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
-                          </p>
-                        )}
-                        {product.tags && product.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {product.tags.slice(0, 3).map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                            {product.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{product.tags.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
+                      )}
+                      
+                      {/* Tags */}
+                      {product.tags && product.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {product.tags.slice(0, 3).map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs px-2 py-1">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {product.tags.length > 3 && (
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
+                              +{product.tags.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </Card>
                 ))}
               </div>

@@ -139,9 +139,9 @@ function SortableProductItem({
           marginBottom: `${spacingCustomization?.margin?.elements || 16}px`
         }}
       >
-        {product.images.length > 0 ? (
+        {product.imageUrl ? (
           <Image
-            src={product.images[0]}
+            src={product.imageUrl}
             alt={product.name}
             width={300}
             height={300}
@@ -520,9 +520,9 @@ export function ProductGrid({
                   marginBottom: `${spacingCustomization?.margin?.elements || 16}px`
                 }}
               >
-                {product.images.length > 0 ? (
+                {product.imageUrl ? (
                   <Image
-                    src={product.images[0]}
+                    src={product.imageUrl}
                     alt={product.name}
                     width={300}
                     height={300}

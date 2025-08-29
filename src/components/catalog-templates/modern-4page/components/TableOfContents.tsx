@@ -61,9 +61,9 @@ export function TableOfContents({ categories, products, themeColors, customColor
             <div className="relative mb-6">
               {/* Category Preview Images */}
               <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 mb-4">
-                {category.sampleProducts.length > 0 && category.sampleProducts[0].images.length > 0 ? (
+                {category.sampleProducts.length > 0 && category.sampleProducts[0].imageUrl ? (
                   <Image
-                    src={category.sampleProducts[0].images[0]}
+                    src={category.sampleProducts[0].imageUrl}
                     alt={category.name}
                     width={300}
                     height={300}

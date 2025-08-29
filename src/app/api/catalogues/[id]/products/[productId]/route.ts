@@ -7,11 +7,11 @@ const updateProductSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().optional(),
   price: z.number().min(0).optional(),
-  priceDisplay: z.enum(['show', 'hide', 'contact']).optional(),
+  priceDisplay: z.string().optional(), // Changed from enum to string to match database schema
   sku: z.string().max(50).optional(),
-  categoryId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().optional().or(z.literal('')), // Allow empty string
   tags: z.array(z.string()).optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: z.string().optional().or(z.literal('')), // Allow empty string, remove URL validation
   images: z.array(z.string().url()).optional(),
   specifications: z.record(z.string()).optional(),
   isActive: z.boolean().optional(),
@@ -80,7 +80,13 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ product })
+    // Transform product to handle imageUrl fallback
+    const transformedProduct = {
+      ...product,
+      imageUrl: product.imageUrl || (product.images && product.images.length > 0 ? product.images[0] : null)
+    }
+
+    return NextResponse.json({ product: transformedProduct })
   } catch (error) {
     console.error('Error fetching product:', error)
     return NextResponse.json(
@@ -143,7 +149,10 @@ export async function PUT(
     }
 
     const body = await request.json()
+    console.log('PUT request body received:', body)
+    
     const validatedData = updateProductSchema.parse(body)
+    console.log('Validated data:', validatedData)
 
     // Check if SKU conflicts with existing products (if SKU is being updated)
     if (validatedData.sku && validatedData.sku !== existingProduct.sku) {
@@ -163,8 +172,8 @@ export async function PUT(
       }
     }
 
-    // Verify category exists if categoryId is provided
-    if (validatedData.categoryId) {
+    // Verify category exists if categoryId is provided and not empty
+    if (validatedData.categoryId && validatedData.categoryId.trim() !== '') {
       const category = await prisma.category.findFirst({
         where: {
           id: validatedData.categoryId,
@@ -179,8 +188,16 @@ export async function PUT(
         )
       }
     }
+    
+    // Convert empty categoryId to null for database
+    if (validatedData.categoryId === '') {
+      validatedData.categoryId = undefined
+    }
 
     // Update product
+    console.log('Updating product with ID:', params.productId)
+    console.log('Update data being sent to database:', validatedData)
+    
     const product = await prisma.product.update({
       where: {
         id: params.productId,
@@ -190,6 +207,8 @@ export async function PUT(
         category: true,
       },
     })
+    
+    console.log('Product updated successfully:', product)
 
     return NextResponse.json({ product })
   } catch (error) {

@@ -86,7 +86,13 @@ export async function GET(
       },
     })
 
-    return NextResponse.json({ products })
+    // Transform products to handle imageUrl fallback
+    const transformedProducts = products.map(product => ({
+      ...product,
+      imageUrl: product.imageUrl || (product.images && product.images.length > 0 ? product.images[0] : null)
+    }))
+
+    return NextResponse.json({ products: transformedProducts })
   } catch (error) {
     console.error('Error fetching products:', error)
     return NextResponse.json(

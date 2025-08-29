@@ -337,10 +337,10 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {catalogue.products.map((product) => (
               <Card key={product.id}>
-                {product.images && product.images.length > 0 && (
+                {product.imageUrl && (
                   <div className="aspect-square">
                     <Image
-                      src={product.images[0]}
+                      src={product.imageUrl}
                       alt={product.name}
                       width={300}
                       height={300}

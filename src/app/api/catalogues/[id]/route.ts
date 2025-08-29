@@ -238,8 +238,12 @@ export async function GET(
           id: product.id,
           name: product.name,
           description: product.description,
-          price: product.price,
+          price: Number(product.price), // Convert Decimal to number
+          priceDisplay: product.priceDisplay,
+          imageUrl: product.imageUrl || (product.images && product.images.length > 0 ? product.images[0] : null),
           images: product.images,
+          tags: product.tags,
+          categoryId: product.categoryId,
           isActive: product.isActive,
           sortOrder: product.sortOrder,
           category: product.category ? {
