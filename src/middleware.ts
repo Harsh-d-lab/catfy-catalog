@@ -1,5 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+// Note: Prisma cannot be used in middleware due to Edge Runtime limitations
+// import { PrismaClient } from '@prisma/client'
+// const prisma = new PrismaClient()
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -124,6 +127,45 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(redirectTo, request.url))
     }
   }
+
+  // Catalogue access control for team collaboration
+  // Note: Temporarily disabled due to Prisma Edge Runtime limitations
+  // This check should be moved to the actual page components or API routes
+  /*
+  const catalogueEditMatch = request.nextUrl.pathname.match(/^\/catalogue\/([^/]+)\/edit/)
+  if (catalogueEditMatch && !isTestUser && !isAdminUser) {
+    const catalogueId = catalogueEditMatch[1]
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (user) {
+      try {
+        // Check if user owns the catalogue or is a team member
+        const hasAccess = await prisma.catalogue.findFirst({
+          where: {
+            id: catalogueId,
+            OR: [
+              { profileId: user.id },
+              {
+                teamMembers: {
+                  some: {
+                    profileId: user.id
+                  }
+                }
+              }
+            ]
+          }
+        })
+
+        if (!hasAccess) {
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+      } catch (error) {
+        console.error('Error checking catalogue access:', error)
+        // Allow access on error to prevent blocking legitimate users
+      }
+    }
+  }
+  */
 
   return response
 }

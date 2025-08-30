@@ -58,11 +58,20 @@ export async function GET(
 
     // Continue with normal database query for all users
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 
@@ -125,11 +134,20 @@ export async function POST(
       )
     }
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 

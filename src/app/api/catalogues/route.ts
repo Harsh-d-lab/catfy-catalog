@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { AccountType } from '@prisma/client'
 import { z } from 'zod'
 
+// Force Node.js runtime to avoid Edge Runtime issues with Prisma
+export const runtime = 'nodejs'
+
 const createCatalogueSchema = z.object({
   name: z.string().min(1, 'Catalogue name is required').max(100),
   description: z.string().optional(),
@@ -136,23 +139,43 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const isPublic = searchParams.get('public')
 
-    const where: any = {
-      profileId: profile.id,
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
+    // Build where clause to include both owned catalogues and team member catalogues
+    const baseWhere: any = {
+      OR: [
+        { profileId: profile.id }, // Catalogues owned by user
+        {
+          teamMembers: {
+            some: {
+              profileId: profile.id
+            }
+          }
+        } // Catalogues where user is a team member
       ]
     }
 
+    // Add search filters if provided
+    if (search) {
+      baseWhere.AND = [
+        {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ]
+        }
+      ]
+    }
+
+    // Add public filter if provided
     if (isPublic !== null) {
-      where.isPublic = isPublic === 'true'
+      if (baseWhere.AND) {
+        baseWhere.AND.push({ isPublic: isPublic === 'true' })
+      } else {
+        baseWhere.AND = [{ isPublic: isPublic === 'true' }]
+      }
     }
 
     const catalogues = await prisma.catalogue.findMany({
-      where,
+      where: baseWhere,
       include: {
         products: {
           select: {
@@ -163,6 +186,14 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
           },
+        },
+        teamMembers: {
+          where: {
+            profileId: profile.id
+          },
+          select: {
+            role: true
+          }
         },
         _count: {
           select: {
@@ -178,23 +209,30 @@ export async function GET(request: NextRequest) {
       skip: offset,
     })
 
-    const total = await prisma.catalogue.count({ where })
+    const total = await prisma.catalogue.count({ where: baseWhere })
 
     return NextResponse.json({
-      catalogues: catalogues.map(catalogue => ({
-        id: catalogue.id,
-        name: catalogue.name,
-        description: catalogue.description,
-        theme: catalogue.theme,
-        isPublic: catalogue.isPublic,
-        settings: catalogue.settings,
-        _count: {
-          products: catalogue._count.products,
-          categories: catalogue._count.categories,
-        },
-        createdAt: catalogue.createdAt,
-        updatedAt: catalogue.updatedAt,
-      })),
+      catalogues: catalogues.map(catalogue => {
+        const isOwner = catalogue.profileId === profile.id
+        const teamMemberRole = catalogue.teamMembers.length > 0 ? catalogue.teamMembers[0].role : null
+        
+        return {
+          id: catalogue.id,
+          name: catalogue.name,
+          description: catalogue.description,
+          theme: catalogue.theme,
+          isPublic: catalogue.isPublic,
+          settings: catalogue.settings,
+          userRole: isOwner ? 'owner' : teamMemberRole,
+          isOwner,
+          _count: {
+            products: catalogue._count.products,
+            categories: catalogue._count.categories,
+          },
+          createdAt: catalogue.createdAt,
+          updatedAt: catalogue.updatedAt,
+        }
+      }),
       pagination: {
         total,
         limit,

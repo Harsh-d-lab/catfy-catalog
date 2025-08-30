@@ -31,6 +31,9 @@ model Profile {
   couponUsages     CouponUsage[]
   exports          Export[]
   subscriptions    Subscription[]
+  teamMemberships  TeamMember[]
+  sentInvitations  Invitation[]   @relation("InvitationSender")
+  receivedInvitations Invitation[] @relation("InvitationReceiver")
 
   @@map("profiles")
 }
@@ -58,6 +61,8 @@ model Catalogue {
   categories     Category[]
   exports        Export[]
   products       Product[]
+  teamMembers    TeamMember[]
+  invitations    Invitation[]
 
   @@map("catalogues")
 }
@@ -250,6 +255,42 @@ model WebhookEvent {
   @@map("webhook_events")
 }
 
+model TeamMember {
+  id          String    @id @default(uuid())
+  role        TeamRole  @default(MEMBER)
+  joinedAt    DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  catalogueId String
+  profileId   String
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([catalogueId, profileId])
+  @@map("team_members")
+}
+
+model Invitation {
+  id          String           @id @default(uuid())
+  email       String
+  token       String           @unique
+  role        TeamRole         @default(MEMBER)
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  catalogueId String
+  senderId    String
+  receiverId  String?
+  catalogue   Catalogue        @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  sender      Profile          @relation("InvitationSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    Profile?         @relation("InvitationReceiver", fields: [receiverId], references: [id], onDelete: SetNull)
+
+  @@unique([catalogueId, email])
+  @@map("invitations")
+}
+
 enum AccountType {
   INDIVIDUAL
   BUSINESS
@@ -319,4 +360,16 @@ enum WebhookSource {
   STRIPE
   SUPABASE
   INTERNAL
+}
+
+enum TeamRole {
+  OWNER
+  MEMBER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
 }

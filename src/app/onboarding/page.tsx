@@ -98,14 +98,7 @@ export default function OnboardingPage() {
       <div className="flex items-center justify-center p-4 min-h-[calc(100vh-80px)]">
         <div className="w-full max-w-4xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">CatalogueAI</h1>
-              <Badge variant="secondary" className={accountTypeColor}>
-                {accountTypeLabel}
-              </Badge>
-            </div>
-            
+          <div className="text-center my-8">
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
               <span>Step {currentStep} of {steps.length}</span>
               <Badge variant="outline" className={isBusinessAccount ? 'border-blue-200 text-blue-700' : 'border-green-200 text-green-700'}>

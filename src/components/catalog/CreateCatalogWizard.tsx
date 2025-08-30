@@ -496,50 +496,70 @@ export function CreateCatalogWizard({ onComplete }: CreateCatalogWizardProps) {
                 <CardContent className="space-y-6">
                   <div>
                      <Label>Company Logo</Label>
-                     <FileUpload
-                       uploadType="catalogue"
-                       catalogueId={data.id}
-                       onUpload={(results) => {
-                         if (results.length > 0) {
-                           updateData('settings.mediaAssets.logoUrl', results[0].url)
-                         }
-                       }}
-                       maxFiles={1}
-                       accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                       className="mt-2"
-                     />
-                     {data.settings.mediaAssets?.logoUrl && (
-                       <div className="mt-2">
+                     {!data.settings.mediaAssets?.logoUrl ? (
+                       <FileUpload
+                         uploadType="catalogue"
+                         catalogueId={data.id}
+                         onUpload={(results) => {
+                           if (results.length > 0) {
+                             updateData('settings.mediaAssets.logoUrl', results[0].url)
+                           }
+                         }}
+                         maxFiles={1}
+                         accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                         className="mt-2"
+                       />
+                     ) : (
+                       <div className="mt-2 space-y-2">
                          <img 
                            src={data.settings.mediaAssets.logoUrl} 
                            alt="Logo preview" 
                            className="w-20 h-20 object-cover rounded-lg border"
                          />
+                         <Button
+                           type="button"
+                           variant="outline"
+                           size="sm"
+                           onClick={() => updateData('settings.mediaAssets.logoUrl', '')}
+                           className="text-xs"
+                         >
+                           Change Logo
+                         </Button>
                        </div>
                      )}
                    </div>
                    
                    <div>
                      <Label>Cover Image</Label>
-                     <FileUpload
-                       uploadType="catalogue"
-                       catalogueId={data.id}
-                       onUpload={(results) => {
-                         if (results.length > 0) {
-                           updateData('settings.mediaAssets.coverImageUrl', results[0].url)
-                         }
-                       }}
-                       maxFiles={1}
-                       accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                       className="mt-2"
-                     />
-                     {data.settings.mediaAssets?.coverImageUrl && (
-                       <div className="mt-2">
+                     {!data.settings.mediaAssets?.coverImageUrl ? (
+                       <FileUpload
+                         uploadType="catalogue"
+                         catalogueId={data.id}
+                         onUpload={(results) => {
+                           if (results.length > 0) {
+                             updateData('settings.mediaAssets.coverImageUrl', results[0].url)
+                           }
+                         }}
+                         maxFiles={1}
+                         accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                         className="mt-2"
+                       />
+                     ) : (
+                       <div className="mt-2 space-y-2">
                          <img 
                            src={data.settings.mediaAssets.coverImageUrl} 
                            alt="Cover image preview" 
                            className="w-32 h-20 object-cover rounded-lg border"
                          />
+                         <Button
+                           type="button"
+                           variant="outline"
+                           size="sm"
+                           onClick={() => updateData('settings.mediaAssets.coverImageUrl', '')}
+                           className="text-xs"
+                         >
+                           Change Cover Image
+                         </Button>
                        </div>
                      )}
                    </div>

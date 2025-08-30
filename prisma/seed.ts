@@ -5,23 +5,8 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seed...')
 
-  // Create test user profile
-  const testProfile = await prisma.profile.upsert({
-    where: { id: 'test-user-id' },
-    update: {},
-    create: {
-      id: 'test-user-id',
-      email: 'test@catfy.com',
-      firstName: 'John',
-      lastName: 'Doe',
-      accountType: AccountType.BUSINESS,
-      companyName: 'Test Company Inc.',
-      phone: '+1-555-0123',
-      website: 'https://testcompany.com',
-    },
-  })
-
-  console.log('✅ Created test profile:', testProfile.email)
+  // Skip test profile creation in production
+  console.log('ℹ️ Skipping test profile creation')
 
   // Create FIRST100 coupon
   const first100Coupon = await prisma.coupon.upsert({
@@ -332,15 +317,13 @@ async function main() {
 
   console.log('🎉 Database seeded successfully!')
   console.log('\n📊 Summary:')
-  console.log(`- Created 1 test profile: ${testProfile.email}`)
   console.log(`- Created 3 coupons (including FIRST100)`)
   console.log(`- Created 1 catalogue: ${sampleCatalogue.name}`)
   console.log(`- Created ${categories.length} categories`)
   console.log(`- Created ${createdProducts.length} products`)
   console.log(`- Created 1 test subscription`)
   console.log(`- Created ${analyticsEvents.length} analytics events`)
-  console.log('\n🔗 Test login: test@catfy.com')
-  console.log('🎫 Test coupon: FIRST100 (50% off yearly, 99/100 remaining)')
+  console.log('\n🎫 Test coupon: FIRST100 (50% off yearly, 99/100 remaining)')
 }
 
 main()

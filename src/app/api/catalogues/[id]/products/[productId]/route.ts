@@ -47,11 +47,20 @@ export async function GET(
       )
     }
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 
@@ -119,17 +128,26 @@ export async function PUT(
       )
     }
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 
     if (!catalogue) {
       return NextResponse.json(
-        { error: 'Catalogue not found' },
+        { error: 'Catalogue not found or access denied' },
         { status: 404 }
       )
     }

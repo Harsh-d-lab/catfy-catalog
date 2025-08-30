@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Header } from '@/components/Header'
+import { TeamManagement } from '@/components/TeamManagement'
 import { 
   ArrowLeft, 
   Save, 
@@ -269,7 +270,7 @@ export default function EditCataloguePage() {
 
     try {
       const url = editingCategory 
-        ? `/api/categories/${editingCategory.id}`
+        ? `/api/catalogues/${catalogueId}/categories/${editingCategory.id}`
         : `/api/catalogues/${catalogueId}/categories`
       
       const method = editingCategory ? 'PUT' : 'POST'
@@ -821,7 +822,7 @@ export default function EditCataloguePage() {
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Catalogue Settings</CardTitle>
+                <CardTitle>Catalogue Settings </CardTitle>
                 <CardDescription>Configure your catalogue preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -837,6 +838,9 @@ export default function EditCataloguePage() {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Team Management */}
+            {catalogue && <TeamManagement catalogueId={catalogue.id} isOwner={true} />}
           </TabsContent>
         </Tabs>
 
@@ -945,30 +949,40 @@ export default function EditCataloguePage() {
               
               <div>
                 <Label className="text-sm font-medium mb-2 block">Product Image</Label>
-                <FileUpload
-                  uploadType="product"
-                  catalogueId={catalogueId}
-                  productId={editingProduct?.id}
-                  maxFiles={1}
-                  accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                  onUpload={(files) => {
-                    if (files.length > 0) {
-                      setProductForm(prev => ({ ...prev, imageUrl: files[0].url }))
-                    }
-                  }}
-                  onError={(error) => {
-                    setError(`Product image upload failed: ${error}`)
-                  }}
-                  className="mt-2"
-                />
-                {productForm.imageUrl && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                {!productForm.imageUrl ? (
+                  <FileUpload
+                    uploadType="product"
+                    catalogueId={catalogueId}
+                    productId={editingProduct?.id}
+                    maxFiles={1}
+                    accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                    onUpload={(files) => {
+                      if (files.length > 0) {
+                        setProductForm(prev => ({ ...prev, imageUrl: files[0].url }))
+                      }
+                    }}
+                    onError={(error) => {
+                      setError(`Product image upload failed: ${error}`)
+                    }}
+                    className="mt-2"
+                  />
+                ) : (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                     <p className="text-sm text-gray-600 mb-2">Current image:</p>
                     <img 
                       src={productForm.imageUrl} 
                       alt="Product Image" 
                       className="w-20 h-20 object-cover border rounded"
                     />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setProductForm(prev => ({ ...prev, imageUrl: '' }))}
+                      className="text-xs"
+                    >
+                      Change Image
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1261,76 +1275,114 @@ export default function EditCataloguePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-sm font-medium mb-2 block">Company Logo</Label>
-                    <FileUpload
-                      uploadType="catalogue"
-                      catalogueId={catalogueId}
-                      maxFiles={1}
-                      accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                      onUpload={(files) => {
-                        if (files.length > 0) {
-                          setCatalogue(prev => prev ? {
-                            ...prev,
-                            settings: {
-                              ...prev.settings,
-                              mediaAssets: {
-                                ...prev.settings?.mediaAssets,
-                                logoUrl: files[0].url
+                    {!catalogue?.settings?.mediaAssets?.logoUrl ? (
+                      <FileUpload
+                        uploadType="catalogue"
+                        catalogueId={catalogueId}
+                        maxFiles={1}
+                        accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                        onUpload={(files) => {
+                          if (files.length > 0) {
+                            setCatalogue(prev => prev ? {
+                              ...prev,
+                              settings: {
+                                ...prev.settings,
+                                mediaAssets: {
+                                  ...prev.settings?.mediaAssets,
+                                  logoUrl: files[0].url
+                                }
                               }
-                            }
-                          } : null)
-                        }
-                      }}
-                      onError={(error) => {
-                        setError(`Logo upload failed: ${error}`)
-                      }}
-                      className="mt-2"
-                    />
-                    {catalogue?.settings?.mediaAssets?.logoUrl && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                            } : null)
+                          }
+                        }}
+                        onError={(error) => {
+                          setError(`Logo upload failed: ${error}`)
+                        }}
+                        className="mt-2"
+                      />
+                    ) : (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                         <p className="text-sm text-gray-600 mb-2">Current logo:</p>
                         <img 
                           src={catalogue.settings.mediaAssets.logoUrl} 
                           alt="Company Logo" 
                           className="w-20 h-20 object-contain border rounded"
                         />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCatalogue(prev => prev ? {
+                            ...prev,
+                            settings: {
+                              ...prev.settings,
+                              mediaAssets: {
+                                ...prev.settings?.mediaAssets,
+                                logoUrl: ''
+                              }
+                            }
+                          } : null)}
+                          className="text-xs"
+                        >
+                          Change Logo
+                        </Button>
                       </div>
                     )}
                   </div>
                   
                   <div>
                     <Label className="text-sm font-medium mb-2 block">Cover Image</Label>
-                    <FileUpload
-                      uploadType="catalogue"
-                      catalogueId={catalogueId}
-                      maxFiles={1}
-                      accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                      onUpload={(files) => {
-                        if (files.length > 0) {
-                          setCatalogue(prev => prev ? {
-                            ...prev,
-                            settings: {
-                              ...prev.settings,
-                              mediaAssets: {
-                                ...prev.settings?.mediaAssets,
-                                coverImageUrl: files[0].url
+                    {!catalogue?.settings?.mediaAssets?.coverImageUrl ? (
+                      <FileUpload
+                        uploadType="catalogue"
+                        catalogueId={catalogueId}
+                        maxFiles={1}
+                        accept={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                        onUpload={(files) => {
+                          if (files.length > 0) {
+                            setCatalogue(prev => prev ? {
+                              ...prev,
+                              settings: {
+                                ...prev.settings,
+                                mediaAssets: {
+                                  ...prev.settings?.mediaAssets,
+                                  coverImageUrl: files[0].url
+                                }
                               }
-                            }
-                          } : null)
-                        }
-                      }}
-                      onError={(error) => {
-                        setError(`Cover image upload failed: ${error}`)
-                      }}
-                      className="mt-2"
-                    />
-                    {catalogue?.settings?.mediaAssets?.coverImageUrl && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                            } : null)
+                          }
+                        }}
+                        onError={(error) => {
+                          setError(`Cover image upload failed: ${error}`)
+                        }}
+                        className="mt-2"
+                      />
+                    ) : (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                         <p className="text-sm text-gray-600 mb-2">Current cover image:</p>
                         <img 
                           src={catalogue.settings.mediaAssets.coverImageUrl} 
                           alt="Cover Image" 
                           className="w-full h-32 object-cover border rounded"
                         />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCatalogue(prev => prev ? {
+                            ...prev,
+                            settings: {
+                              ...prev.settings,
+                              mediaAssets: {
+                                ...prev.settings?.mediaAssets,
+                                coverImageUrl: ''
+                              }
+                            }
+                          } : null)}
+                          className="text-xs"
+                        >
+                          Change Cover Image
+                        </Button>
                       </div>
                     )}
                   </div>

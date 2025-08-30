@@ -35,29 +35,7 @@ export async function getUser() {
     } as any
   }
   
-  // Check for test user bypass
-  if (testUserBypass?.value === 'test@catfy.com') {
-    // Return mock user data for test@catfy.com
-    return {
-      id: 'test-profile-id',
-      email: 'test@catfy.com',
-      user_metadata: {
-        full_name: 'Test User',
-        first_name: 'Test',
-        last_name: 'User',
-        account_type: 'BUSINESS',
-        company_name: 'Test Company Inc.',
-        phone: '+1-555-0123',
-        website: 'https://testcompany.com',
-      },
-      app_metadata: {
-        provider: 'test',
-        providers: ['test'],
-      },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-    } as any
-  }
+  // Removed test user bypass logic to prevent interference with real authentication
   
   const supabase = createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
@@ -133,52 +111,7 @@ export async function getUserProfile(userId?: string) {
     return adminProfile
   }
   
-  // Handle test user - create profile in database if it doesn't exist
-  if (user.id === 'test-profile-id' || user.email === 'test@catfy.com') {
-    let testProfile = await prisma.profile.findUnique({
-      where: { id: 'test-profile-id' },
-      include: {
-        catalogues: {
-          orderBy: { updatedAt: 'desc' },
-          take: 5,
-        },
-        subscriptions: {
-          where: { status: 'ACTIVE' },
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    })
-    
-    if (!testProfile) {
-      testProfile = await prisma.profile.create({
-        data: {
-          id: 'test-profile-id',
-          email: 'test@catfy.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          fullName: 'John Doe',
-          accountType: 'BUSINESS',
-          companyName: 'Test Company Inc.',
-          phone: '+1-555-0123',
-          website: 'https://testcompany.com',
-        },
-        include: {
-          catalogues: {
-            orderBy: { updatedAt: 'desc' },
-            take: 5,
-          },
-          subscriptions: {
-            where: { status: 'ACTIVE' },
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-        },
-      })
-    }
-    
-    return testProfile
-  }
+  // Removed hardcoded test user profile logic
   
   // Try to find existing profile
   let profile = await prisma.profile.findUnique({

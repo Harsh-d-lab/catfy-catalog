@@ -35,11 +35,20 @@ export async function POST(request: NextRequest) {
     if (user) {
       profile = await getUserProfile(user.id)
       
-      // Check for owned catalogue first
+      // Check for owned or team member catalogue first
       catalogue = await prisma.catalogue.findFirst({
         where: {
           id: catalogueId,
-          profileId: profile?.id,
+          OR: [
+            { profileId: profile?.id }, // User owns the catalogue
+            {
+              teamMembers: {
+                some: {
+                  profileId: profile?.id
+                }
+              }
+            } // User is a team member
+          ]
         },
         include: {
           products: {

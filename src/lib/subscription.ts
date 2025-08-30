@@ -12,6 +12,7 @@ export const PLAN_FEATURES = {
     maxCategories: -1, // unlimited
     maxExportsPerMonth: 5,
     maxStorageGB: 50, // 50 MB
+    maxTeamMembers: 3, // up to 3 team members
     features: {
       customDomain: false,
       advancedAnalytics: false,
@@ -20,7 +21,7 @@ export const PLAN_FEATURES = {
       apiAccess: false,
       customBranding: false,
       advancedExports: false,
-      teamCollaboration: false,
+      teamCollaboration: true,
       advancedSEO: false,
       customThemes: false,
     },
@@ -29,7 +30,8 @@ export const PLAN_FEATURES = {
       'Standard templates',
       'PDF export',
       'Basic analytics',
-      'Email support'
+      'Email support',
+      'Team collaboration (up to 3 members)'
     ],
     excluded: [
       'Custom domain',
@@ -49,6 +51,7 @@ export const PLAN_FEATURES = {
     maxCategories: -1, // unlimited
     maxExportsPerMonth: 50,
     maxStorageGB: 100, // 100 MB
+    maxTeamMembers: 3, // up to 3 team members
     features: {
       customDomain: true,
       advancedAnalytics: true,
@@ -57,7 +60,7 @@ export const PLAN_FEATURES = {
       apiAccess: false,
       customBranding: true,
       advancedExports: true,
-      teamCollaboration: false,
+      teamCollaboration: true,
       advancedSEO: true,
       customThemes: true,
     },
@@ -74,7 +77,7 @@ export const PLAN_FEATURES = {
       'White label',
       'Priority support',
       'API access',
-      'Team collaboration'
+      'Team collaboration (up to 3 members)'
     ]
   },
   [SubscriptionPlan.PROFESSIONAL]: {
@@ -87,6 +90,7 @@ export const PLAN_FEATURES = {
     maxCategories: -1, // unlimited
     maxExportsPerMonth: 200,
     maxStorageGB: 500, // 500 MB
+    maxTeamMembers: 3, // up to 3 team members
     features: {
       customDomain: true,
       advancedAnalytics: true,
@@ -104,7 +108,6 @@ export const PLAN_FEATURES = {
       'White label',
       'Priority support',
       'API access',
-      'Team collaboration',
       'Advanced integrations'
     ],
     excluded: [
@@ -121,6 +124,7 @@ export const PLAN_FEATURES = {
     maxCategories: -1, // unlimited
     maxExportsPerMonth: -1, // unlimited
     maxStorageGB: -1, // unlimited
+    maxTeamMembers: 3, // up to 3 team members
     features: {
       customDomain: true,
       advancedAnalytics: true,
@@ -139,6 +143,7 @@ export const PLAN_FEATURES = {
       'Unlimited products',
       'Unlimited exports',
       'Unlimited storage',
+      'Team collaboration (up to 3 members)',
       'Dedicated support',
       'Custom integrations'
     ],
@@ -218,4 +223,25 @@ export function getYearlySavingsPercentage(monthlyPrice: number, yearlyPrice: nu
   if (monthlyPrice === 0) return 0
   const savings = calculateYearlySavings(monthlyPrice, yearlyPrice)
   return Math.round((savings / (monthlyPrice * 12)) * 100)
+}
+
+// Team collaboration helper functions
+export function canInviteTeamMembers(plan: SubscriptionPlan): boolean {
+  return PLAN_FEATURES[plan].features.teamCollaboration
+}
+
+export function getMaxTeamMembers(plan: SubscriptionPlan): number {
+  return PLAN_FEATURES[plan].maxTeamMembers
+}
+
+export function canAddTeamMember(plan: SubscriptionPlan, currentCount: number): boolean {
+  const maxMembers = getMaxTeamMembers(plan)
+  return maxMembers === -1 || currentCount < maxMembers
+}
+
+export function getTeamMemberUpgradeMessage(plan: SubscriptionPlan): string {
+  const maxMembers = getMaxTeamMembers(plan)
+  const planName = PLAN_FEATURES[plan].name
+  
+  return `You have reached the maximum team member limit (${maxMembers}) for your ${planName} plan.`
 }

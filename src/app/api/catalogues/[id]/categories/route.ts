@@ -3,6 +3,9 @@ import { getUser, getUserProfile } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+// Force Node.js runtime to avoid Edge Runtime issues with Prisma
+export const runtime = 'nodejs'
+
 const createCategorySchema = z.object({
   name: z.string().min(1, 'Category name is required').max(50),
   description: z.string().optional(),
@@ -44,11 +47,20 @@ export async function GET(
 
     // Continue with normal database query for all users
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 
@@ -108,17 +120,26 @@ export async function POST(
       )
     }
 
-    // Verify catalogue ownership
+    // Verify catalogue access (ownership or team membership)
     const catalogue = await prisma.catalogue.findFirst({
       where: {
         id: params.id,
-        profileId: profile.id,
+        OR: [
+          { profileId: profile.id }, // User owns the catalogue
+          {
+            teamMembers: {
+              some: {
+                profileId: profile.id
+              }
+            }
+          } // User is a team member
+        ]
       },
     })
 
     if (!catalogue) {
       return NextResponse.json(
-        { error: 'Catalogue not found' },
+        { error: 'Catalogue not found or access denied' },
         { status: 404 }
       )
     }
