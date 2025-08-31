@@ -10,8 +10,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Header } from '@/components/Header'
-import { Loader2, Save, User, Building, Mail, Phone, Globe, MapPin } from 'lucide-react'
+import { Loader2, Save, User, Building, Mail, Phone, Globe, MapPin, HelpCircle, FileText, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 
 interface UserProfile {
   id: string
@@ -148,6 +149,46 @@ export default function SettingsPage() {
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
+          {/* Navigation Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link href="/help">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <HelpCircle className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Help & Support</h3>
+                        <p className="text-sm text-gray-600">Get help and contact support</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link href="/documentation">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <FileText className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Documentation</h3>
+                        <p className="text-sm text-gray-600">Learn how to use all features</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
           {/* Account Information */}
           <Card>
             <CardHeader>

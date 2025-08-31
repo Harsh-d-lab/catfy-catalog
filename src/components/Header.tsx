@@ -211,7 +211,7 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/docs" className="cursor-pointer">
+                  <Link href="/documentation" className="cursor-pointer">
                     <FileText className="mr-2 h-4 w-4" />
                     <span>Documentation</span>
                   </Link>
