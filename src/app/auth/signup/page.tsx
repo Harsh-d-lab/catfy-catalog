@@ -83,15 +83,6 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // Bypass authentication for test@catfy.com
-      if (formData.email === 'test@catfy.com') {
-        // Set bypass cookie
-        document.cookie = `test-user-bypass=${formData.email}; path=/; max-age=86400`
-        toast.success('Account created successfully! (Test Mode)')
-        router.push('/onboarding')
-        return
-      }
-
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,

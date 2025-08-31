@@ -30,16 +30,6 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Bypass authentication for test@catfy.com
-      if (email === 'test@catfy.com') {
-        // Set bypass cookie
-        document.cookie = `test-user-bypass=${email}; path=/; max-age=86400`
-        toast.success('Welcome back! (Test Mode)')
-        router.push('/dashboard')
-        router.refresh()
-        return
-      }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -368,6 +358,14 @@ export default function LoginPage() {
                 className="text-purple-600 hover:text-purple-500 font-medium"
               >
                 Sign Up
+              </Link>
+            </div>
+            <div className="text-sm text-center text-gray-600">
+              <Link
+                href="/admin/login"
+                className="text-red-500 hover:text-red-600 font-medium"
+              >
+                Admin Login
               </Link>
             </div>
           </CardFooter>
