@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -152,18 +153,85 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Create your account
-          </CardTitle>
-          <CardDescription className="text-center">
-            Start building beautiful catalogues with CATFY
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
+    <div className="min-h-screen flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-purple-700 to-blue-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
+          <div className="mb-8">
+            <div className="w-32 h-32 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+              <Image
+                src="/assets/CATFYLogo.png"
+                alt="CatalogueAI Logo"
+                width={100}
+                height={100}
+                className="w-full h-full"
+              />
+            </div>
+            <h1 className="text-4xl font-bold mb-4">AI-Powered Catalogue Builder</h1>
+            <p className="text-xl text-purple-100 mb-8">Create stunning product catalogues in minutes with AI assistance. Choose from 5 professional themes and let AI handle the heavy lifting.</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">AI-Generated Content</h3>
+                <p className="text-purple-100">Smart product descriptions & categorization</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Professional Themes</h3>
+                <p className="text-purple-100">5 stunning catalogue designs to choose from</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Export & Share</h3>
+                <p className="text-purple-100">PDF-ready catalogues in one click</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-12 flex items-center space-x-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold">10K+</div>
+              <div className="text-sm text-purple-200">Happy Users</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">50K+</div>
+              <div className="text-sm text-purple-200">Catalogues Created</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Right Side - Signup Form */}
+      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="mx-auto w-full max-w-md">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Welcome to CATFY</h2>
+            <p className="mt-2 text-sm text-gray-600">Sign up to start building your AI-powered catalogue</p>
+          </div>
+          
+          <div className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -173,19 +241,23 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="space-y-6">
             {/* Account Type Selection */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Account Type</Label>
+              <Label className="text-sm font-medium text-gray-700">Account Type</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div 
-                  className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                  className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all ${
                     formData.accountType === 'INDIVIDUAL' 
-                      ? 'border-blue-500 bg-blue-50' 
+                      ? 'border-purple-500 bg-purple-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => setFormData({ ...formData, accountType: 'INDIVIDUAL' })}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                      <User className="h-5 w-5 text-gray-600" />
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                      formData.accountType === 'INDIVIDUAL' ? 'bg-purple-100' : 'bg-gray-100'
+                    }`}>
+                      <User className={`h-5 w-5 ${
+                        formData.accountType === 'INDIVIDUAL' ? 'text-purple-600' : 'text-gray-600'
+                      }`} />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">Individual</h3>
@@ -193,25 +265,31 @@ export default function SignupPage() {
                     </div>
                   </div>
                   {formData.accountType === 'INDIVIDUAL' && (
-                    <div className="absolute top-2 right-2">
-                      <div className="h-4 w-4 rounded-full bg-blue-500 flex items-center justify-center">
-                        <div className="h-2 w-2 rounded-full bg-white"></div>
+                    <div className="absolute top-3 right-3">
+                      <div className="h-5 w-5 rounded-full bg-purple-500 flex items-center justify-center">
+                        <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
                       </div>
                     </div>
                   )}
                 </div>
                 
                 <div 
-                  className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                  className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all ${
                     formData.accountType === 'BUSINESS' 
-                      ? 'border-blue-500 bg-blue-50' 
+                      ? 'border-purple-500 bg-purple-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => setFormData({ ...formData, accountType: 'BUSINESS' })}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                      <svg className="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                      formData.accountType === 'BUSINESS' ? 'bg-purple-100' : 'bg-gray-100'
+                    }`}>
+                      <svg className={`h-5 w-5 ${
+                        formData.accountType === 'BUSINESS' ? 'text-purple-600' : 'text-gray-600'
+                      }`} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v4H7V5zm8 8v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2h8z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -221,41 +299,22 @@ export default function SignupPage() {
                     </div>
                   </div>
                   {formData.accountType === 'BUSINESS' && (
-                    <div className="absolute top-2 right-2">
-                      <div className="h-4 w-4 rounded-full bg-blue-500 flex items-center justify-center">
-                        <div className="h-2 w-2 rounded-full bg-white"></div>
+                    <div className="absolute top-3 right-3">
+                      <div className="h-5 w-5 rounded-full bg-purple-500 flex items-center justify-center">
+                        <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-              
-              {/* Business Benefits */}
-              {formData.accountType === 'BUSINESS' && (
-                <div className="mt-4 rounded-lg bg-blue-50 p-4">
-                  <h4 className="text-sm font-medium text-blue-900 mb-2">Business Benefits:</h4>
-                  <ul className="space-y-1 text-sm text-blue-800">
-                    <li className="flex items-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-600 mr-2"></div>
-                      Team collaboration features
-                    </li>
-                    <li className="flex items-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-600 mr-2"></div>
-                      Advanced branding options
-                    </li>
-                    <li className="flex items-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-600 mr-2"></div>
-                      Priority support
-                    </li>
-                  </ul>
-                </div>
-              )}
             </div>
             
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First name</Label>
                 <Input
                   id="firstName"
                   type="text"
@@ -264,10 +323,11 @@ export default function SignupPage() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                   disabled={isLoading}
+                  className="w-full h-12 px-4 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last name</Label>
                 <Input
                   id="lastName"
                   type="text"
@@ -276,6 +336,7 @@ export default function SignupPage() {
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                   disabled={isLoading}
+                  className="w-full h-12 px-4 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                 />
               </div>
             </div>
@@ -283,7 +344,7 @@ export default function SignupPage() {
             {/* Company Name (Business only) */}
             {formData.accountType === 'BUSINESS' && (
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company name</Label>
+                <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">Company name</Label>
                 <Input
                   id="companyName"
                   type="text"
@@ -292,110 +353,104 @@ export default function SignupPage() {
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                   required
                   disabled={isLoading}
+                  className="w-full h-12 px-4 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                 />
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-4 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pl-10"
+                  className=" w-full h-12 px-10 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                   required
                   disabled={isLoading}
                 />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="pl-10 pr-10"
-                  required
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+            {/* Password Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                    disabled={isLoading}
+                    className="w-full h-12 px-4 pr-12 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                    placeholder="Create a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Must be at least 8 characters long
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                Must be at least 8 characters long
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
+                  type="password"
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="pl-10 pr-10"
+                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   required
                   disabled={isLoading}
+                  className="w-full h-12 px-4 rounded-xl border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                  placeholder="Confirm your password"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-3">
               <Checkbox
                 id="terms"
                 checked={acceptTerms}
                 onCheckedChange={(checked) => setAcceptTerms(checked === true)}
                 disabled={isLoading}
+                className="mt-1"
               />
-              <Label htmlFor="terms" className="text-sm">
-                I agree to the{' '}
-                <Link href="/terms" className="text-blue-600 hover:underline">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link href="/privacy" className="text-blue-600 hover:underline">
-                  Privacy Policy
-                </Link>
-              </Label>
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="terms"
+                  className="text-sm leading-relaxed text-gray-600 cursor-pointer"
+                >
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-purple-600 hover:text-purple-500 underline">
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-purple-600 hover:text-purple-500 underline">
+                    Privacy Policy
+                  </Link>
+                </Label>
+              </div>
             </div>
             
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-xl font-medium"
               disabled={isLoading || !acceptTerms}
             >
               {isLoading ? (
@@ -411,19 +466,20 @@ export default function SignupPage() {
           
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
+              <span className="bg-white px-3 text-gray-500 font-medium">
+                OR
               </span>
             </div>
           </div>
           
           <Button
+            type="button"
             variant="outline"
+            className="w-full h-12 border-gray-200 hover:bg-gray-50 rounded-xl font-medium"
             onClick={handleGoogleSignup}
-            className="w-full"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -431,39 +487,38 @@ export default function SignupPage() {
             ) : (
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
-                  fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
                 />
                 <path
-                  fill="currentColor"
                   d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
                 />
                 <path
-                  fill="currentColor"
                   d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05"
                 />
                 <path
-                  fill="currentColor"
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
                 />
               </svg>
             )}
             Continue with Google
           </Button>
-        </CardContent>
-        
-        <CardFooter>
-          <div className="text-sm text-center text-gray-600 w-full">
-            Already have an account?{' '}
-            <Link
-              href="/auth/login"
-              className="text-blue-600 hover:underline font-medium"
-            >
-              Sign in
-            </Link>
+            
+            <div className="text-sm text-center text-gray-600">
+              Already have an account?{' '}
+              <Link
+                href="/auth/login"
+                className="text-purple-600 hover:text-purple-500 font-medium"
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

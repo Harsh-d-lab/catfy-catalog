@@ -123,6 +123,11 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
+      // Allow access to reset password page for password recovery
+      if (request.nextUrl.pathname === '/auth/reset-password') {
+        return NextResponse.next()
+      }
+      
       const redirectTo = request.nextUrl.searchParams.get('redirect') || '/dashboard'
       return NextResponse.redirect(new URL(redirectTo, request.url))
     }
