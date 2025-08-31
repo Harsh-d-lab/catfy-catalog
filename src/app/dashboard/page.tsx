@@ -26,7 +26,9 @@ import {
   Users,
   TrendingUp,
   Crown,
-  Zap
+  Zap,
+  Palette,
+  FolderOpen
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -427,42 +429,66 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCatalogues.map((catalogue) => (
-              <Card key={catalogue.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{catalogue.name}</CardTitle>
-                      <CardDescription className="line-clamp-2">
-                        {catalogue.description || 'No description'}
-                      </CardDescription>
-                    </div>
-                    
+              <Card key={catalogue.id} className="group hover:shadow-xl transition-all duration-500 overflow-hidden border-0 bg-white shadow-lg hover:shadow-2xl hover:-translate-y-1">
+                {/* Simplified Header with Clean Design */}
+                 <div className="relative h-40 bg-gradient-to-br from-indigo-200 via-blue-50 to-blue-50 overflow-hidden">
+                   {/* Subtle Background Pattern */}
+                   <div className="absolute inset-0 opacity-40">
+                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.1)_0%,transparent_50%)]" />
+                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.08)_0%,transparent_50%)]" />
+                   </div>
+                   
+                   {/* Content */}
+                   <div className="relative h-full p-6 flex flex-col justify-center text-center">
+                     {/* Catalogue Name */}
+                     <h3 className="text-2xl font-bold text-gray-800 leading-tight group-hover:text-indigo-700 transition-colors duration-300 mb-3">
+                       {catalogue.name}
+                     </h3>
+                     
+                     {/* Description */}
+                     <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 max-w-sm mx-auto">
+                       {catalogue.description || 'A beautifully crafted catalogue showcasing premium products and categories with modern design.'}
+                     </p>
+                   </div>
+                  
+                  {/* Action Menu */}
+                  <div className="absolute top-3 right-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-8 w-8 p-0 bg-white/90 hover:bg-white backdrop-blur-sm border border-slate-200/60 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        >
+                          <MoreVertical className="h-4 w-4 text-slate-600" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/catalogue/${catalogue.id}/preview`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Preview
-                          </Link>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          onClick={() => router.push(`/catalogue/${catalogue.id}/preview`)}
+                          className="cursor-pointer"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Preview
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/catalogue/${catalogue.id}/edit`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Link>
+                        <DropdownMenuItem 
+                          onClick={() => router.push(`/catalogue/${catalogue.id}/edit`)}
+                          className="cursor-pointer"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Catalogue
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => shareCatalogue(catalogue)}>
+                        <DropdownMenuItem 
+                          onClick={() => shareCatalogue(catalogue)}
+                          className="cursor-pointer"
+                        >
                           <Share2 className="mr-2 h-4 w-4" />
                           Share
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => exportToPDF(catalogue.id)}
                           disabled={!canExport()}
+                          className="cursor-pointer"
                         >
                           <Download className="mr-2 h-4 w-4" />
                           Export PDF
@@ -470,7 +496,7 @@ export default function DashboardPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
-                          className="text-red-600"
+                          className="cursor-pointer text-red-600 focus:text-red-600"
                           onClick={() => deleteCatalogue(catalogue.id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -479,40 +505,45 @@ export default function DashboardPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                </CardHeader>
+                  
+                  {/* Status Badges */}
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <Badge 
+                      variant={catalogue.isPublic ? 'default' : 'secondary'} 
+                      className="bg-white/90 text-slate-800 border border-slate-200/60 text-xs px-2 py-1"
+                    >
+                      {catalogue.isPublic ? 'Public' : 'Private'}
+                    </Badge>
+                  </div>
+                </div>
                 
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Products:</span>
-                      <span className="font-medium">{catalogue._count?.products || 0}</span>
+                {/* Content Section */}
+                <div className="p-6 bg-white">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-indigo-50 rounded-lg">
+                      <div className="text-xl font-bold text-indigo-600">{catalogue._count?.categories || 0}</div>
+                      <div className="text-xs text-gray-500 font-medium">Categories</div>
                     </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Categories:</span>
-                      <span className="font-medium">{catalogue._count?.categories || 0}</span>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-xl font-bold text-blue-600">{catalogue._count?.products || 0}</div>
+                      <div className="text-xs text-gray-500 font-medium">Products</div>
                     </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Visibility:</span>
-                      <Badge variant={catalogue.isPublic ? 'default' : 'secondary'}>
-                        {catalogue.isPublic ? 'Public' : 'Private'}
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <Badge variant="outline" className="text-xs px-2 py-1 bg-purple-100 border-purple-200 text-purple-700">
+                        <Palette className="h-3 w-3 mr-1" />
+                        {catalogue.theme || 'Modern'}
                       </Badge>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Theme:</span>
-                      <Badge variant="outline" className="capitalize">
-                        {catalogue.theme || 'modern'}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center text-xs text-gray-500 pt-2 border-t">
-                      <Calendar className="mr-1 h-3 w-3" />
-                      Updated {formatDistanceToNow(new Date(catalogue.updatedAt), { addSuffix: true })}
+                      <div className="text-xs text-gray-500 pt-2 font-medium">Theme</div>
                     </div>
                   </div>
-                </CardContent>
+                  
+                  {/* Update Info */}
+                  <div className="flex items-center justify-center text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    <span>Updated {formatDistanceToNow(new Date(catalogue.updatedAt), { addSuffix: true })}</span>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>

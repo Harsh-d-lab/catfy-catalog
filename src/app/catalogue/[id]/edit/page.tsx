@@ -41,7 +41,13 @@ import {
   MoreVertical,
   Upload,
   Download,
-  Palette
+  Palette,
+  Check,
+  Crown,
+  Monitor,
+  Sparkles,
+  Zap,
+  Gem
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -108,6 +114,7 @@ interface Category {
   id: string
   name: string
   description: string
+  color?: string
   _count: {
     products: number
   }
@@ -135,6 +142,7 @@ export default function EditCataloguePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorTimeoutId, setErrorTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
@@ -154,10 +162,210 @@ export default function EditCataloguePage() {
   })
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [selectedThemeCategory, setSelectedThemeCategory] = useState('all')
+  const [selectedTheme, setSelectedTheme] = useState('modern')
+
+  // Theme data matching the themes page
+  const THEMES = [
+    {
+      id: 'modern',
+      name: 'Modern Blue',
+      description: 'Clean and contemporary design with blue accents',
+      category: 'modern' as const,
+      isPremium: false,
+      previewImage: '/themes/modern-preview.jpg',
+      colors: {
+        primary: '#3B82F6',
+        secondary: '#1E40AF',
+        accent: '#60A5FA',
+        background: '#F8FAFC'
+      },
+      features: ['Responsive grid layout', 'Clean typography', 'Blue color scheme']
+    },
+    {
+      id: 'classic',
+      name: 'Classic Warm',
+      description: 'Traditional design with warm, inviting colors',
+      category: 'classic' as const,
+      isPremium: false,
+      previewImage: '/themes/classic-preview.jpg',
+      colors: {
+        primary: '#F59E0B',
+        secondary: '#D97706',
+        accent: '#FCD34D',
+        background: '#FFFBEB'
+      },
+      features: ['Traditional layout', 'Warm color palette', 'Elegant typography']
+    },
+    {
+      id: 'minimal',
+      name: 'Minimal White',
+      description: 'Ultra-clean minimalist design focusing on content',
+      category: 'minimal' as const,
+      isPremium: false,
+      previewImage: '/themes/minimal-preview.jpg',
+      colors: {
+        primary: '#374151',
+        secondary: '#111827',
+        accent: '#6B7280',
+        background: '#FFFFFF'
+      },
+      features: ['Minimalist design', 'Maximum whitespace', 'Content-focused']
+    },
+    {
+      id: 'bold',
+      name: 'Bold Purple',
+      description: 'Eye-catching design with vibrant purple gradients',
+      category: 'bold' as const,
+      isPremium: true,
+      previewImage: '/themes/bold-preview.jpg',
+      colors: {
+        primary: '#8B5CF6',
+        secondary: '#7C3AED',
+        accent: '#A78BFA',
+        background: '#FAF5FF'
+      },
+      features: ['Gradient backgrounds', 'Bold typography', 'Purple color scheme', 'Premium animations']
+    },
+    {
+      id: 'elegant',
+      name: 'Elegant Gray',
+      description: 'Sophisticated design with elegant gray tones',
+      category: 'elegant' as const,
+      isPremium: true,
+      previewImage: '/themes/elegant-preview.jpg',
+      colors: {
+        primary: '#64748B',
+        secondary: '#475569',
+        accent: '#94A3B8',
+        background: '#F8FAFC'
+      },
+      features: ['Sophisticated layout', 'Premium typography', 'Elegant spacing', 'Advanced animations']
+    },
+    {
+      id: 'tech',
+      name: 'Tech Cyan',
+      description: 'Futuristic design perfect for tech products',
+      category: 'tech' as const,
+      isPremium: true,
+      previewImage: '/themes/tech-preview.jpg',
+      colors: {
+        primary: '#06B6D4',
+        secondary: '#0891B2',
+        accent: '#67E8F9',
+        background: '#ECFEFF'
+      },
+      features: ['Futuristic design', 'Tech-inspired elements', 'Cyan accents', 'Interactive components']
+    }
+  ]
+
+  const THEME_ICONS = {
+    modern: Monitor,
+    classic: Palette,
+    minimal: Sparkles,
+    bold: Zap,
+    elegant: Crown,
+    tech: Gem
+  }
+
+  // Filter themes based on selected category
+  const filteredThemesForCategory = THEMES.filter(theme => {
+    if (selectedThemeCategory === 'all') return true
+    if (selectedThemeCategory === 'free') return !theme.isPremium
+    if (selectedThemeCategory === 'premium') return theme.isPremium
+    return theme.category === selectedThemeCategory
+  })
+
+  // Handle theme selection
+  const handleThemeSelect = async (themeId: string) => {
+    const theme = THEMES.find(t => t.id === themeId)
+    if (!theme) return
+
+    // For now, assume user can only use free themes
+    if (theme.isPremium) {
+      toast.error('This is a premium theme. Upgrade your plan to use it.')
+      return
+    }
+
+    setSelectedTheme(themeId)
+    
+    // Update catalogue theme
+    if (catalogue) {
+      setCatalogue(prev => prev ? { ...prev, theme: themeId } : null)
+      
+      // Save to localStorage for global theme application
+      localStorage.setItem('selectedTheme', themeId)
+      
+      // Save to database
+      try {
+        const response = await fetch(`/api/catalogues/${catalogueId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ theme: themeId }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update theme')
+        }
+
+        toast.success('Theme updated successfully!')
+      } catch (error) {
+        console.error('Error updating theme:', error)
+        toast.error('Failed to update theme')
+      }
+    }
+  }
 
   useEffect(() => {
     fetchCatalogue()
   }, [catalogueId])
+
+  // Load selected theme from localStorage and catalogue data
+  useEffect(() => {
+    if (catalogue) {
+      // Set selected theme from catalogue data or localStorage
+      const savedTheme = localStorage.getItem('selectedTheme')
+      const themeToUse = catalogue.theme || savedTheme || 'modern'
+      setSelectedTheme(themeToUse)
+      
+      // If catalogue doesn't have a theme but localStorage does, update catalogue
+      if (!catalogue.theme && savedTheme) {
+        setCatalogue(prev => prev ? { ...prev, theme: savedTheme } : null)
+      }
+    }
+  }, [catalogue])
+
+  // Auto-dismiss errors after 5 seconds
+  useEffect(() => {
+    if (error) {
+      // Clear any existing timeout
+      if (errorTimeoutId) {
+        clearTimeout(errorTimeoutId)
+      }
+      
+      // Set new timeout to clear error after 5 seconds
+      const timeoutId = setTimeout(() => {
+        setError(null)
+        setErrorTimeoutId(null)
+      }, 5000)
+      
+      setErrorTimeoutId(timeoutId)
+    }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (errorTimeoutId) {
+        clearTimeout(errorTimeoutId)
+      }
+    }
+  }, [error])
+
+  // Helper function to set error with auto-dismiss
+  const setErrorWithAutoDismiss = (errorMessage: string) => {
+    setError(errorMessage)
+  }
 
   const fetchCatalogue = async () => {
     try {
@@ -174,7 +382,7 @@ export default function EditCataloguePage() {
       setCatalogue(data.catalogue)
     } catch (error: any) {
       console.error('Error fetching catalogue:', error)
-      setError(error.message || 'Failed to load catalogue')
+      setErrorWithAutoDismiss(error.message || 'Failed to load catalogue')
     } finally {
       setIsLoading(false)
     }
@@ -464,16 +672,33 @@ export default function EditCataloguePage() {
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setError(null)
+                  if (errorTimeoutId) {
+                    clearTimeout(errorTimeoutId)
+                    setErrorTimeoutId(null)
+                  }
+                }}
+                className="h-auto p-1 ml-2 hover:bg-red-100"
+              >
+                ×
+              </Button>
+            </AlertDescription>
           </Alert>
         )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="categories">Categories ({catalogue.categories.length})</TabsTrigger>
             <TabsTrigger value="products">Products ({catalogue.products.length})</TabsTrigger>
+            <TabsTrigger value="theme">Theme</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -532,84 +757,16 @@ export default function EditCataloguePage() {
               </Card>
             </div>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Common tasks for managing your catalogue</CardDescription>
-              </CardHeader>
-              <CardContent className="p">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div
-                    onClick={() => openCategoryDialog()}
-                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
-                  >
-                    <div className="flex flex-row items-center justify-center text-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
-                        <Plus className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">Add Category</p>
-                        <p className="text-xs text-gray-600">Organize products</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => openProductDialog()}
-                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                  >
-                    <div className="flex flex-row justify-center items-center text-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
-                        <Package className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">Add Product</p>
-                        <p className="text-xs text-gray-600">Expand catalogue</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setShowEditDialog(true)}
-                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                  >
-                    <div className="flex flex-row justify-center items-center text-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
-                        <Edit className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">Edit Details</p>
-                        <p className="text-xs text-gray-600">Update branding</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setShowSettingsDialog(true)}
-                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
-                  >
-                    <div className="flex flex-row items-center text-center justify-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
-                        <Settings className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">Edit Settings</p>
-                        <p className="text-xs text-gray-600">Display options</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Categories */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Categories</CardTitle>
-                <CardDescription>Your latest category additions</CardDescription>
-              </CardHeader>
-              <CardContent>
+            {/* Recent Categories and Quick Actions - Column Layout */}
+            <div className="grid grid-cols-10 gap-6">
+              {/* Recent Categories - 70% */}
+              <div className="col-span-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Categories</CardTitle>
+                    <CardDescription>Your latest category additions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
                 {catalogue.categories.length === 0 ? (
                   <div className="text-center py-8">
                     <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -621,26 +778,177 @@ export default function EditCataloguePage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {catalogue.categories.slice(0, 3).map((category) => (
-                      <div className='grid grid-cols-4'>
-
-
-                        <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div>
-                            <h4 className="font-medium">{category.name}</h4>
-                            <p className="text-sm text-gray-600">{category._count.products} products</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {catalogue.categories.slice(0, 3).map((category) => {
+                      // Get first product image from this category for preview
+                      const categoryProducts = catalogue.products.filter(p => p.categoryId === category.id)
+                      const previewImage = categoryProducts.find(p => p.imageUrl)?.imageUrl
+                      
+                      return (
+                        <Card key={category.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden border border-slate-200/60 bg-white shadow-sm">
+                          {/* Compact Image Section */}
+                          <div className="relative h-24 bg-slate-50 overflow-hidden">
+                            {previewImage ? (
+                              <div className="absolute inset-0">
+                                <img
+                                  src={previewImage}
+                                  alt={category.name}
+                                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
+                              </div>
+                            ) : (
+                              <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
+                                <div 
+                                  className="w-12 h-12 rounded-lg flex items-center justify-center border"
+                                  style={{
+                                    backgroundColor: category.color ? `${category.color}10` : '#f8fafc',
+                                    borderColor: category.color ? `${category.color}30` : '#e2e8f0'
+                                  }}
+                                >
+                                  <Package 
+                                    className="h-6 w-6" 
+                                    style={{ color: category.color || '#64748b' }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Action Button */}
+                            <div className="absolute top-2 right-2">
+                              <Button 
+                                onClick={() => openCategoryDialog(category)} 
+                                variant="ghost" 
+                                size="sm"
+                                className="h-7 w-7 p-0 bg-white/90 hover:bg-white backdrop-blur-sm border border-slate-200/60 shadow-sm"
+                              >
+                                <Edit className="h-3 w-3 text-slate-600" />
+                              </Button>
+                            </div>
                           </div>
-                          <Button onClick={() => openCategoryDialog(category)} variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          
+                          {/* Content Section */}
+                          <div className="p-3 space-y-2">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-slate-800 text-sm truncate">{category.name}</h4>
+                                <div 
+                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                                  style={{ backgroundColor: category.color || '#10b981' }}
+                                />
+                              </div>
+                              <span className="text-xs text-slate-600 font-medium">
+                                {category._count.products} {category._count.products === 1 ? 'Product' : 'Products'}
+                              </span>
+                            </div>
+                            
+                            {/* Product Preview Thumbnails */}
+                            {categoryProducts.length > 0 && (
+                              <div className="flex gap-1">
+                                {categoryProducts.slice(0, 3).map((product, idx) => (
+                                  <div key={product.id} className="w-6 h-6 rounded border border-slate-200 overflow-hidden">
+                                    {product.imageUrl ? (
+                                      <img
+                                        src={product.imageUrl}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                                        <Package className="h-3 w-3 text-slate-400" />
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                                {categoryProducts.length > 3 && (
+                                  <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                    <span className="text-[9px] font-semibold text-slate-500">+{categoryProducts.length - 3}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}              </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions - 30% */}
+              <div className="col-span-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                    <CardDescription>Common tasks for managing your catalogue</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div
+                        onClick={() => openCategoryDialog()}
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                      >
+                        <div className="flex flex-row items-center justify-center text-center gap-3">
+                          <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                            <Plus className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">Add Category</p>
+                            <p className="text-xs text-gray-600">Organize products</p>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
+                      <div
+                        onClick={() => openProductDialog()}
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                      >
+                        <div className="flex flex-row justify-center items-center text-center gap-3">
+                          <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                            <Package className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">Add Product</p>
+                            <p className="text-xs text-gray-600">Expand catalogue</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setShowEditDialog(true)}
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                      >
+                        <div className="flex flex-row justify-center items-center text-center gap-3">
+                          <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                            <Edit className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">Edit Details</p>
+                            <p className="text-xs text-gray-600">Update branding</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => setShowSettingsDialog(true)}
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                      >
+                        <div className="flex flex-row items-center text-center justify-center gap-3">
+                          <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                            <Settings className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">Edit Settings</p>
+                            <p className="text-xs text-gray-600">Display options</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Categories Tab */}
@@ -669,54 +977,154 @@ export default function EditCataloguePage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {catalogue.categories.map((category) => (
-                  <Card key={category.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{category.name}</CardTitle>
-                          <CardDescription className="line-clamp-2">
-                            {category.description || 'No description'}
-                          </CardDescription>
+                {catalogue.categories.map((category) => {
+                  // Get first product image from this category for preview
+                  const categoryProducts = catalogue.products.filter(p => p.categoryId === category.id)
+                  const previewImage = categoryProducts.find(p => p.imageUrl)?.imageUrl
+                  
+                  return (
+                    <Card key={category.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border border-slate-200/60 bg-white shadow-sm hover:shadow-slate-200/40">
+                      {/* Premium Header with Clean Image Display */}
+                      <div className="relative h-48 bg-slate-50 overflow-hidden">
+                        {/* Category Preview Image */}
+                        {previewImage ? (
+                          <div className="absolute inset-0">
+                            <img
+                              src={previewImage}
+                              alt={category.name}
+                              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 opacity-95"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/30 to-transparent" />
+                          </div>
+                        ) : (
+                          // Clean fallback with subtle color accent
+                          <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
+                            <div 
+                              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-sm border-2"
+                              style={{
+                                backgroundColor: category.color ? `${category.color}10` : '#f8fafc',
+                                borderColor: category.color ? `${category.color}30` : '#e2e8f0'
+                              }}
+                            >
+                              <Package 
+                                className="h-8 w-8" 
+                                style={{ color: category.color || '#64748b' }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Subtle Corner Accent */}
+                        <div 
+                          className="absolute top-0 right-0 w-20 h-20 opacity-15"
+                          style={{
+                            background: `radial-gradient(circle at top right, #64748b 0%, transparent 70%)`
+                          }}
+                        />
+                        
+                        {/* Action Menu */}
+                        <div className="absolute top-4 right-4">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-white/95 hover:bg-white backdrop-blur-sm border border-slate-200/60 shadow-sm">
+                                <MoreVertical className="h-4 w-4 text-slate-600" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openCategoryDialog(category)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openCategoryDialog(category)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        
+                        {/* Category Title - Clean Design */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5">
+                          <div className="space-y-1">
+                            <h3 className="text-slate-800 font-semibold text-xl leading-tight">
+                              {category.name}
+                            </h3>
+                            <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
+                              {category.description || 'No description'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary">
-                          {category._count.products} products
-                        </Badge>
+                      
+                      {/* Premium Content Section */}
+                      <CardContent className="p-6 space-y-5">
+                        {/* Stats Row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div 
+                              className="w-2 h-2 rounded-full" 
+                              style={{ backgroundColor: category.color || '#10b981' }}
+                            />
+                            <span className="text-sm font-semibold text-slate-700">
+                              {category._count.products} {category._count.products === 1 ? 'Product' : 'Products'}
+                            </span>
+                          </div>
+                          
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-slate-50 text-slate-700 border-slate-200 font-medium px-3 py-1"
+                          >
+                            Active
+                          </Badge>
+                        </div>
+                        
+                        {/* Product Preview Thumbnails */}
+                        {categoryProducts.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Featured Products</p>
+                            <div className="flex gap-2.5">
+                              {categoryProducts.slice(0, 4).map((product, idx) => (
+                                <div key={product.id} className="group/thumb">
+                                  {product.imageUrl ? (
+                                    <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all duration-200 group-hover/thumb:shadow-md group-hover/thumb:scale-105">
+                                      <img
+                                        src={product.imageUrl}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center transition-all duration-200 group-hover/thumb:bg-slate-100">
+                                      <Package className="h-6 w-6 text-slate-400" />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {categoryProducts.length > 4 && (
+                                <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                                  <span className="text-xs font-semibold text-slate-500">+{categoryProducts.length - 4}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Action Button */}
                         <Button
                           variant="outline"
-                          size="sm"
+                          className="w-full bg-white border-slate-200 hover:bg-slate-50 text-slate-700 font-medium h-11 transition-all duration-200 hover:border-slate-300"
                           onClick={() => {
                             setActiveTab('products')
                           }}
                         >
+                          <Eye className="mr-2.5 h-4 w-4" />
                           View Products
                         </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             )}
           </TabsContent>
@@ -887,6 +1295,155 @@ export default function EditCataloguePage() {
             {/* Team Management */}
             {catalogue && <TeamManagement catalogueId={catalogue.id} isOwner={true} />}
           </TabsContent>
+
+          {/* Theme Tab */}
+          <TabsContent value="theme" className="space-y-6">
+            <div className="flex gap-6">
+              {/* Sidebar */}
+              <div className="w-64 space-y-4">
+                <div>
+                  <h3 className="font-medium text-sm text-gray-900 mb-3">Categories</h3>
+                  <div className="space-y-1">
+                    {[
+                      { id: 'all', label: 'All Themes', count: THEMES.length },
+                      { id: 'free', label: 'Free', count: THEMES.filter(t => !t.isPremium).length },
+                      { id: 'premium', label: 'Premium', count: THEMES.filter(t => t.isPremium).length },
+                      { id: 'modern', label: 'Modern', count: THEMES.filter(t => t.category === 'modern').length },
+                      { id: 'classic', label: 'Classic', count: THEMES.filter(t => t.category === 'classic').length },
+                      { id: 'minimal', label: 'Minimal', count: THEMES.filter(t => t.category === 'minimal').length },
+                      { id: 'bold', label: 'Bold', count: THEMES.filter(t => t.category === 'bold').length },
+                      { id: 'elegant', label: 'Elegant', count: THEMES.filter(t => t.category === 'elegant').length },
+                      { id: 'tech', label: 'Tech', count: THEMES.filter(t => t.category === 'tech').length }
+                    ].map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedThemeCategory(category.id)}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md text-left transition-colors ${
+                          selectedThemeCategory === category.id
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        <span>{category.label}</span>
+                        <span className="text-gray-500">{category.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t">
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-sm text-blue-900 mb-1">Current Plan</h4>
+                    <p className="text-xs text-blue-700">Free Plan</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1">
+                <div className="mb-6">
+                  <h3 className="font-medium text-lg capitalize">
+                    {selectedThemeCategory === 'all' ? 'All Themes' : selectedThemeCategory} ({filteredThemesForCategory.length})
+                  </h3>
+                  <p className="text-sm text-gray-600">Choose from our collection of professionally designed themes</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredThemesForCategory.map((theme) => {
+                    const IconComponent = THEME_ICONS[theme.category as keyof typeof THEME_ICONS] || Monitor
+                    const isSelected = selectedTheme === theme.id
+                    
+                    return (
+                      <div
+                        key={theme.id}
+                        onClick={() => handleThemeSelect(theme.id)}
+                        className={`relative border rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg group ${
+                          isSelected 
+                            ? 'border-blue-500 bg-blue-50 shadow-md' 
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        {/* Premium Badge */}
+                        {theme.isPremium && (
+                          <div className="absolute top-4 right-4">
+                            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                              <Crown className="h-3 w-3" />
+                              Premium
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Selected Badge */}
+                        {isSelected && (
+                          <div className="absolute top-4 left-4">
+                            <div className="bg-blue-500 text-white rounded-full p-1.5">
+                              <Check className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="space-y-4">
+                          {/* Theme Icon */}
+                          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors">
+                            <IconComponent className="h-6 w-6 text-gray-600" />
+                          </div>
+                          
+                          {/* Theme Info */}
+                          <div>
+                            <h4 className="font-semibold text-lg text-gray-900">{theme.name}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{theme.description}</p>
+                          </div>
+                          
+                          {/* Color Palette */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-700 mb-2">Color Palette</p>
+                            <div className="flex gap-2">
+                              {Object.values(theme.colors).map((color, index) => (
+                                <div
+                                  key={index}
+                                  className="w-8 h-8 rounded-lg border-2 border-white shadow-sm"
+                                  style={{ backgroundColor: color }}
+                                  title={color}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Features */}
+                          <div>
+                            <p className="text-xs font-medium text-gray-700 mb-2">Features</p>
+                            <ul className="space-y-1">
+                              {theme.features.slice(0, 3).map((feature, index) => (
+                                <li key={index} className="text-xs text-gray-600 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                                  {feature}
+                                </li>
+                              ))}
+                              {theme.features.length > 3 && (
+                                <li className="text-xs text-gray-500 italic">
+                                  +{theme.features.length - 3} more features
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                
+                {filteredThemesForCategory.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 mb-2">
+                      <Palette className="h-12 w-12 mx-auto" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No themes found</h3>
+                    <p className="text-gray-600">Try selecting a different category</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
 
         {/* Category Dialog */}
@@ -1007,7 +1564,7 @@ export default function EditCataloguePage() {
                       }
                     }}
                     onError={(error) => {
-                      setError(`Product image upload failed: ${error}`)
+                      setErrorWithAutoDismiss(`Product image upload failed: ${error}`)
                     }}
                     className="mt-2"
                   />
@@ -1285,32 +1842,7 @@ export default function EditCataloguePage() {
                 </div>
               </div>
 
-              {/* Theme Selection */}
-              <div>
-                <h3 className="text-lg font-medium mb-4">Theme</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { id: 'modern', name: 'Modern', description: 'Clean and contemporary' },
-                    { id: 'classic', name: 'Classic', description: 'Traditional and elegant' },
-                    { id: 'minimal', name: 'Minimal', description: 'Simple and focused' },
-                    { id: 'bold', name: 'Bold', description: 'Vibrant and eye-catching' },
-                    { id: 'elegant', name: 'Elegant', description: 'Sophisticated and refined' },
-                    { id: 'tech', name: 'Tech', description: 'Modern and technical' }
-                  ].map((theme) => (
-                    <div
-                      key={theme.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${catalogue?.theme === theme.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      onClick={() => setCatalogue(prev => prev ? { ...prev, theme: theme.id } : null)}
-                    >
-                      <h4 className="font-medium text-sm">{theme.name}</h4>
-                      <p className="text-xs text-gray-600">{theme.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
 
               {/* Media & Assets */}
               <div className="space-y-4">
@@ -1339,7 +1871,7 @@ export default function EditCataloguePage() {
                           }
                         }}
                         onError={(error) => {
-                          setError(`Logo upload failed: ${error}`)
+                          setErrorWithAutoDismiss(`Logo upload failed: ${error}`)
                         }}
                         className="mt-2"
                       />
@@ -1396,7 +1928,7 @@ export default function EditCataloguePage() {
                           }
                         }}
                         onError={(error) => {
-                          setError(`Cover image upload failed: ${error}`)
+                          setErrorWithAutoDismiss(`Cover image upload failed: ${error}`)
                         }}
                         className="mt-2"
                       />
