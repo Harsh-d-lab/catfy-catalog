@@ -309,6 +309,24 @@ export default function EditCataloguePage() {
           throw new Error('Failed to update theme')
         }
 
+        // Track theme selection for analytics
+        try {
+          await fetch('/api/admin/theme-analytics', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              themeId,
+              themeName: theme.name,
+              catalogueId,
+            }),
+          })
+        } catch (analyticsError) {
+          console.error('Failed to track theme selection:', analyticsError)
+          // Don't show error to user as this is background tracking
+        }
+
         toast.success('Theme updated successfully!')
       } catch (error) {
         console.error('Error updating theme:', error)

@@ -1,42 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import { prisma } from '@/lib/prisma'
-import { AccountType } from '@prisma/client'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { ADMIN_EMAILS, getAdminProfile } from '@/lib/admin-config'
+import { AccountType } from '@prisma/client'
+import { ADMIN_EMAILS } from '@/lib/admin-config'
+import type { User } from '@supabase/supabase-js'
 
 export async function getUser() {
-  // Check for admin session
-  const cookieStore = cookies()
-  const adminSession = cookieStore.get('admin-session')
-  const testUserBypass = cookieStore.get('test-user-bypass')
-  
-  // Handle admin session
-  if (adminSession?.value === 'admin@catfy.com') {
-    return {
-      id: 'admin-profile-id',
-      email: 'admin@catfy.com',
-      user_metadata: {
-        full_name: 'Admin User',
-        first_name: 'Admin',
-        last_name: 'User',
-        account_type: 'BUSINESS',
-        company_name: 'CATFY Administration',
-        phone: '+1-555-ADMIN',
-        website: 'https://catfy.com',
-      },
-      app_metadata: {
-        provider: 'admin',
-        providers: ['admin'],
-      },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-    } as any
-  }
-  
-  // Removed test user bypass logic to prevent interference with real authentication
-  
   const supabase = createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   
@@ -65,7 +35,7 @@ export async function getUserProfile(userId?: string) {
   }
   
   // Handle admin profile - create in database if it doesn't exist
-  if (user.id === 'admin-profile-id' || user.email === 'admin@catfy.com') {
+  if (user.id === 'admin-profile-id' || (user as User).email === 'admin@catfy.com') {
     let adminProfile = await prisma.profile.findUnique({
       where: { id: 'admin-profile-id' },
       include: {
@@ -182,7 +152,6 @@ export async function createOrUpdateProfile({
 export async function signOut() {
   const supabase = createBrowserClient()
   await supabase.auth.signOut()
-  window.location.href = '/'
 }
 
 export async function isAdmin(userId?: string) {
@@ -193,7 +162,8 @@ export async function isAdmin(userId?: string) {
   }
   
   // Check if user is admin using the admin configuration
-  return ADMIN_EMAILS.includes(user.email || '') || user.email?.includes('admin') || false
+  const userEmail = (user as User).email || ''
+  return ADMIN_EMAILS.includes(userEmail) || userEmail.includes('admin') || false
 }
 
 export async function requireAdmin() {

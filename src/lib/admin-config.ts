@@ -27,30 +27,15 @@ export const ADMIN_CONFIG = {
   }
 }
 
-// List of admin emails (for backward compatibility)
-export const ADMIN_EMAILS = [
-  ADMIN_CONFIG.email,
-  'test@catfy.com', // Keep test user for development
-]
-
 // Function to check if an email is an admin email
 export function isAdminEmail(email: string): boolean {
-  return ADMIN_EMAILS.includes(email) || email.includes('admin')
+  return email === ADMIN_CONFIG.email
 }
 
 // Function to validate admin credentials
 export function validateAdminCredentials(email: string, password: string): boolean {
-  // Check for main admin account
-  if (email === ADMIN_CONFIG.email && password === ADMIN_CONFIG.password) {
-    return true
-  }
-  
-  // Check for test user (bypass password check)
-  if (email === 'test@catfy.com') {
-    return true
-  }
-  
-  return false
+  // Only allow the main admin account
+  return email === ADMIN_CONFIG.email && password === ADMIN_CONFIG.password
 }
 
 // Get admin profile data
@@ -66,23 +51,8 @@ export function getAdminProfile(email: string) {
     }
   }
   
-  // Return test user profile for test@catfy.com
-  if (email === 'test@catfy.com') {
-    return {
-      id: 'test-profile-id',
-      email: 'test@catfy.com',
-      firstName: 'Test',
-      lastName: 'User',
-      fullName: 'Test User',
-      accountType: 'BUSINESS' as const,
-      companyName: 'Test Company Inc.',
-      phone: '+1-555-0123',
-      website: 'https://testcompany.com',
-      isAdmin: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-  }
-  
   return null
 }
+
+// List of admin emails for compatibility
+export const ADMIN_EMAILS = [ADMIN_CONFIG.email]

@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Handle admin and test users with unlimited access
-    if (user.email === 'admin@catfy.com' || user.email === 'test@catfy.com') {
+    // Handle admin user with unlimited access
+    if (user.email === 'admin@catfy.com') {
       return NextResponse.json({
         plan: SubscriptionPlan.BUSINESS, // Give admin users the highest plan
         usage: {

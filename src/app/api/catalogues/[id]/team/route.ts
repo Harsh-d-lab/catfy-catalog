@@ -5,6 +5,7 @@ import { sendTeamInvitation } from '@/lib/email'
 import { canInviteTeamMembers, canAddTeamMember, getMaxTeamMembers, getTeamMemberUpgradeMessage } from '@/lib/subscription'
 import { SubscriptionPlan } from '@prisma/client'
 import crypto from 'crypto'
+import type { User } from '@supabase/supabase-js'
 
 // GET /api/catalogues/[id]/team - Get team members for a catalogue
 export async function GET(
@@ -210,7 +211,7 @@ export async function POST(
     }
 
     // Check if user is trying to invite themselves
-    if (email.toLowerCase() === user.email.toLowerCase()) {
+    if (email.toLowerCase() === (user as User).email?.toLowerCase()) {
       return NextResponse.json(
         { error: 'You cannot invite yourself' },
         { status: 400 }

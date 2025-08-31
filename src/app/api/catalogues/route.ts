@@ -392,6 +392,24 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Track theme selection for analytics if theme is specified
+    if (catalogue.theme) {
+      try {
+        await prisma.themeAnalytics.create({
+          data: {
+            themeId: catalogue.theme,
+            themeName: catalogue.theme, // We'll use the theme ID as name for now
+            catalogueId: catalogue.id,
+            profileId: profile.id,
+            selectedAt: new Date(),
+          },
+        })
+      } catch (analyticsError) {
+        console.error('Failed to track theme selection during catalogue creation:', analyticsError)
+        // Don't fail the catalogue creation if analytics tracking fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       catalogue: {

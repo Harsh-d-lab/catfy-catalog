@@ -36,34 +36,14 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Validate admin credentials
+      // First validate admin credentials locally
       if (!validateAdminCredentials(email, password)) {
         setError('Invalid admin credentials.')
         setIsLoading(false)
         return
       }
 
-      // Handle admin login based on email
-      if (email === 'admin@catfy.com') {
-        // Set admin session cookie
-        document.cookie = `admin-session=${email}; path=/; max-age=86400`
-        toast.success('Welcome Admin!')
-        router.push('/admin')
-        router.refresh()
-        return
-      }
-
-      // Bypass authentication for test@catfy.com
-      if (email === 'test@catfy.com') {
-        // Set bypass cookie
-        document.cookie = `test-user-bypass=${email}; path=/; max-age=86400`
-        toast.success('Welcome Admin! (Test Mode)')
-        router.push('/admin')
-        router.refresh()
-        return
-      }
-
-      // For other admin emails, use Supabase authentication
+      // Use Supabase authentication for all users
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -75,16 +55,14 @@ export default function AdminLoginPage() {
       }
 
       if (data.user) {
-        // Double-check admin access after successful login
-        const userEmail = data.user.email || ''
-        if (!isAdminEmail(userEmail)) {
-          setError('Access denied. Admin credentials required.')
-          await supabase.auth.signOut()
-          return
+        // Check if user is admin and redirect accordingly
+        if (isAdminEmail(data.user.email || '')) {
+          toast.success('Welcome Admin!')
+          router.push('/admin')
+        } else {
+          toast.success('Login successful!')
+          router.push('/dashboard')
         }
-
-        toast.success('Welcome Admin!')
-        router.push('/admin')
         router.refresh()
       }
     } catch (err) {
