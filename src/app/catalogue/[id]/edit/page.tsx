@@ -160,6 +160,7 @@ export default function EditCataloguePage() {
     imageUrl: '',
     tags: [] as string[]
   })
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   const [selectedThemeCategory, setSelectedThemeCategory] = useState('all')
@@ -1528,21 +1529,61 @@ export default function EditCataloguePage() {
                     variant="outline"
                     size="xs"
                     className="w-fit text-xs"
-                    onClick={() => {
-                      // Dummy AI generate functionality
-                      const aiDescriptions = [
-                        "High-quality product with excellent features and durability.",
-                        "Premium item designed for modern lifestyle and convenience.",
-                        "Innovative solution that combines style with functionality.",
-                        "Professional-grade product built to exceed expectations.",
-                        "Carefully crafted item with attention to detail and quality."
-                      ];
-                      const randomDescription = aiDescriptions[Math.floor(Math.random() * aiDescriptions.length)];
-                      setProductForm(prev => ({ ...prev, description: randomDescription }));
-                      toast.success("AI description generated!");
+                    disabled={isGeneratingDescription || !productForm.name.trim()}
+                    onClick={async () => {
+                      if (!productForm.name.trim()) {
+                        toast.error("Please enter a product name first");
+                        return;
+                      }
+
+                      setIsGeneratingDescription(true);
+                      
+                      try {
+                        const category = catalogue?.categories.find(cat => cat.id === productForm.categoryId);
+                        
+                        const response = await fetch('/api/ai/description', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            productName: productForm.name,
+                            category: category?.name,
+                            tags: productForm.tags,
+                            price: productForm.price > 0 ? productForm.price : undefined
+                          })
+                        });
+
+                        if (!response.ok) {
+                          throw new Error(`Failed to generate description: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        if (data.success && data.description) {
+                          setProductForm(prev => ({ ...prev, description: data.description }));
+                          toast.success("AI description generated successfully!");
+                        } else {
+                          throw new Error(data.error || 'Failed to generate description');
+                        }
+                      } catch (error) {
+                        console.error('AI Generation Error:', error);
+                        toast.error(error instanceof Error ? error.message : 'Failed to generate description');
+                      } finally {
+                        setIsGeneratingDescription(false);
+                      }
                     }}
                   >
-                    🤖 AI Generate Description
+                    {isGeneratingDescription ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        🤖 AI Generate Description
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
