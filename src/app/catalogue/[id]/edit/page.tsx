@@ -288,14 +288,14 @@ export default function EditCataloguePage() {
     }
 
     setSelectedTheme(themeId)
-    
+
     // Update catalogue theme
     if (catalogue) {
       setCatalogue(prev => prev ? { ...prev, theme: themeId } : null)
-      
+
       // Save to localStorage for global theme application
       localStorage.setItem('selectedTheme', themeId)
-      
+
       // Save to database
       try {
         const response = await fetch(`/api/catalogues/${catalogueId}`, {
@@ -329,7 +329,7 @@ export default function EditCataloguePage() {
       const savedTheme = localStorage.getItem('selectedTheme')
       const themeToUse = catalogue.theme || savedTheme || 'modern'
       setSelectedTheme(themeToUse)
-      
+
       // If catalogue doesn't have a theme but localStorage does, update catalogue
       if (!catalogue.theme && savedTheme) {
         setCatalogue(prev => prev ? { ...prev, theme: savedTheme } : null)
@@ -344,16 +344,16 @@ export default function EditCataloguePage() {
       if (errorTimeoutId) {
         clearTimeout(errorTimeoutId)
       }
-      
+
       // Set new timeout to clear error after 5 seconds
       const timeoutId = setTimeout(() => {
         setError(null)
         setErrorTimeoutId(null)
       }, 5000)
-      
+
       setErrorTimeoutId(timeoutId)
     }
-    
+
     // Cleanup timeout on unmount
     return () => {
       if (errorTimeoutId) {
@@ -767,112 +767,112 @@ export default function EditCataloguePage() {
                     <CardDescription>Your latest category additions</CardDescription>
                   </CardHeader>
                   <CardContent>
-                {catalogue.categories.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
-                    <p className="text-gray-600 mb-4">Create your first category to organize your products</p>
-                    <Button onClick={() => openCategoryDialog()}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create Category
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    {catalogue.categories.slice(0, 3).map((category) => {
-                      // Get first product image from this category for preview
-                      const categoryProducts = catalogue.products.filter(p => p.categoryId === category.id)
-                      const previewImage = categoryProducts.find(p => p.imageUrl)?.imageUrl
-                      
-                      return (
-                        <Card key={category.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden border border-slate-200/60 bg-white shadow-sm">
-                          {/* Compact Image Section */}
-                          <div className="relative h-24 bg-slate-50 overflow-hidden">
-                            {previewImage ? (
-                              <div className="absolute inset-0">
-                                <img
-                                  src={previewImage}
-                                  alt={category.name}
-                                  className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
-                              </div>
-                            ) : (
-                              <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
-                                <div 
-                                  className="w-12 h-12 rounded-lg flex items-center justify-center border"
-                                  style={{
-                                    backgroundColor: category.color ? `${category.color}10` : '#f8fafc',
-                                    borderColor: category.color ? `${category.color}30` : '#e2e8f0'
-                                  }}
-                                >
-                                  <Package 
-                                    className="h-6 w-6" 
-                                    style={{ color: category.color || '#64748b' }}
-                                  />
+                    {catalogue.categories.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No categories yet</h3>
+                        <p className="text-gray-600 mb-4">Create your first category to organize your products</p>
+                        <Button onClick={() => openCategoryDialog()}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create Category
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        {catalogue.categories.slice(0, 3).map((category) => {
+                          // Get first product image from this category for preview
+                          const categoryProducts = catalogue.products.filter(p => p.categoryId === category.id)
+                          const previewImage = categoryProducts.find(p => p.imageUrl)?.imageUrl
+
+                          return (
+                            <Card key={category.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden border border-slate-200/60 bg-white shadow-sm">
+                              {/* Compact Image Section */}
+                              <div className="relative h-48 bg-slate-50 overflow-hidden">
+                                {previewImage ? (
+                                  <div className="absolute inset-0">
+                                    <img
+                                      src={previewImage}
+                                      alt={category.name}
+                                      className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
+                                  </div>
+                                ) : (
+                                  <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
+                                    <div
+                                      className="w-12 h-12 rounded-lg flex items-center justify-center border"
+                                      style={{
+                                        backgroundColor: category.color ? `${category.color}10` : '#f8fafc',
+                                        borderColor: category.color ? `${category.color}30` : '#e2e8f0'
+                                      }}
+                                    >
+                                      <Package
+                                        className="h-6 w-6"
+                                        style={{ color: category.color || '#64748b' }}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Action Button */}
+                                <div className="absolute top-2 right-2">
+                                  <Button
+                                    onClick={() => openCategoryDialog(category)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 bg-white/90 hover:bg-white backdrop-blur-sm border border-slate-200/60 shadow-sm"
+                                  >
+                                    <Edit className="h-3 w-3 text-slate-600" />
+                                  </Button>
                                 </div>
                               </div>
-                            )}
-                            
-                            {/* Action Button */}
-                            <div className="absolute top-2 right-2">
-                              <Button 
-                                onClick={() => openCategoryDialog(category)} 
-                                variant="ghost" 
-                                size="sm"
-                                className="h-7 w-7 p-0 bg-white/90 hover:bg-white backdrop-blur-sm border border-slate-200/60 shadow-sm"
-                              >
-                                <Edit className="h-3 w-3 text-slate-600" />
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          {/* Content Section */}
-                          <div className="p-3 space-y-2">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-semibold text-slate-800 text-sm truncate">{category.name}</h4>
-                                <div 
-                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                                  style={{ backgroundColor: category.color || '#10b981' }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-600 font-medium">
-                                {category._count.products} {category._count.products === 1 ? 'Product' : 'Products'}
-                              </span>
-                            </div>
-                            
-                            {/* Product Preview Thumbnails */}
-                            {categoryProducts.length > 0 && (
-                              <div className="flex gap-1">
-                                {categoryProducts.slice(0, 3).map((product, idx) => (
-                                  <div key={product.id} className="w-6 h-6 rounded border border-slate-200 overflow-hidden">
-                                    {product.imageUrl ? (
-                                      <img
-                                        src={product.imageUrl}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                                        <Package className="h-3 w-3 text-slate-400" />
+
+                              {/* Content Section */}
+                              <div className="p-3 space-y-2">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-semibold text-slate-800 text-sm truncate">{category.name}</h4>
+                                    <div
+                                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                      style={{ backgroundColor: category.color || '#10b981' }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-slate-600 font-medium">
+                                    {category._count.products} {category._count.products === 1 ? 'Product' : 'Products'}
+                                  </span>
+                                </div>
+
+                                {/* Product Preview Thumbnails */}
+                                {categoryProducts.length > 0 && (
+                                  <div className="flex gap-1">
+                                    {categoryProducts.slice(0, 3).map((product, idx) => (
+                                      <div key={product.id} className="w-6 h-6 rounded border border-slate-200 overflow-hidden">
+                                        {product.imageUrl ? (
+                                          <img
+                                            src={product.imageUrl}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                                            <Package className="h-3 w-3 text-slate-400" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                    {categoryProducts.length > 3 && (
+                                      <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                        <span className="text-[9px] font-semibold text-slate-500">+{categoryProducts.length - 3}</span>
                                       </div>
                                     )}
                                   </div>
-                                ))}
-                                {categoryProducts.length > 3 && (
-                                  <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                    <span className="text-[9px] font-semibold text-slate-500">+{categoryProducts.length - 3}</span>
-                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                )}              </CardContent>
+                            </Card>
+                          )
+                        })}
+                      </div>
+                    )}              </CardContent>
                 </Card>
               </div>
 
@@ -887,7 +887,7 @@ export default function EditCataloguePage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div
                         onClick={() => openCategoryDialog()}
-                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-50 hover:to-blue-100 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
                       >
                         <div className="flex flex-row items-center justify-center text-center gap-3">
                           <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
@@ -902,7 +902,7 @@ export default function EditCataloguePage() {
 
                       <div
                         onClick={() => openProductDialog()}
-                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-50 hover:to-blue-100 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
                       >
                         <div className="flex flex-row justify-center items-center text-center gap-3">
                           <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
@@ -917,7 +917,7 @@ export default function EditCataloguePage() {
 
                       <div
                         onClick={() => setShowEditDialog(true)}
-                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-50 hover:to-blue-100 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
                       >
                         <div className="flex flex-row justify-center items-center text-center gap-3">
                           <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
@@ -932,7 +932,7 @@ export default function EditCataloguePage() {
 
                       <div
                         onClick={() => setShowSettingsDialog(true)}
-                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                        className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-50 hover:to-blue-100 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
                       >
                         <div className="flex flex-row items-center text-center justify-center gap-3">
                           <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
@@ -981,7 +981,7 @@ export default function EditCataloguePage() {
                   // Get first product image from this category for preview
                   const categoryProducts = catalogue.products.filter(p => p.categoryId === category.id)
                   const previewImage = categoryProducts.find(p => p.imageUrl)?.imageUrl
-                  
+
                   return (
                     <Card key={category.id} className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border border-slate-200/60 bg-white shadow-sm hover:shadow-slate-200/40">
                       {/* Premium Header with Clean Image Display */}
@@ -999,29 +999,29 @@ export default function EditCataloguePage() {
                         ) : (
                           // Clean fallback with subtle color accent
                           <div className="absolute inset-0 bg-slate-50 flex items-center justify-center">
-                            <div 
+                            <div
                               className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-sm border-2"
                               style={{
                                 backgroundColor: category.color ? `${category.color}10` : '#f8fafc',
                                 borderColor: category.color ? `${category.color}30` : '#e2e8f0'
                               }}
                             >
-                              <Package 
-                                className="h-8 w-8" 
+                              <Package
+                                className="h-8 w-8"
                                 style={{ color: category.color || '#64748b' }}
                               />
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Subtle Corner Accent */}
-                        <div 
+                        <div
                           className="absolute top-0 right-0 w-20 h-20 opacity-15"
                           style={{
                             background: `radial-gradient(circle at top right, #64748b 0%, transparent 70%)`
                           }}
                         />
-                        
+
                         {/* Action Menu */}
                         <div className="absolute top-4 right-4">
                           <DropdownMenu>
@@ -1043,7 +1043,7 @@ export default function EditCataloguePage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                        
+
                         {/* Category Title - Clean Design */}
                         <div className="absolute bottom-0 left-0 right-0 p-5">
                           <div className="space-y-1">
@@ -1056,29 +1056,29 @@ export default function EditCataloguePage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Premium Content Section */}
                       <CardContent className="p-6 space-y-5">
                         {/* Stats Row */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
-                            <div 
-                              className="w-2 h-2 rounded-full" 
+                            <div
+                              className="w-2 h-2 rounded-full"
                               style={{ backgroundColor: category.color || '#10b981' }}
                             />
                             <span className="text-sm font-semibold text-slate-700">
                               {category._count.products} {category._count.products === 1 ? 'Product' : 'Products'}
                             </span>
                           </div>
-                          
-                          <Badge 
-                            variant="secondary" 
+
+                          <Badge
+                            variant="secondary"
                             className="bg-slate-50 text-slate-700 border-slate-200 font-medium px-3 py-1"
                           >
                             Active
                           </Badge>
                         </div>
-                        
+
                         {/* Product Preview Thumbnails */}
                         {categoryProducts.length > 0 && (
                           <div className="space-y-3">
@@ -1109,7 +1109,7 @@ export default function EditCataloguePage() {
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Action Button */}
                         <Button
                           variant="outline"
@@ -1318,11 +1318,10 @@ export default function EditCataloguePage() {
                       <button
                         key={category.id}
                         onClick={() => setSelectedThemeCategory(category.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md text-left transition-colors ${
-                          selectedThemeCategory === category.id
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'hover:bg-gray-100 text-gray-700'
-                        }`}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md text-left transition-colors ${selectedThemeCategory === category.id
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'hover:bg-gray-100 text-gray-700'
+                          }`}
                       >
                         <span>{category.label}</span>
                         <span className="text-gray-500">{category.count}</span>
@@ -1330,7 +1329,7 @@ export default function EditCataloguePage() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t">
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <h4 className="font-medium text-sm text-blue-900 mb-1">Current Plan</h4>
@@ -1347,21 +1346,20 @@ export default function EditCataloguePage() {
                   </h3>
                   <p className="text-sm text-gray-600">Choose from our collection of professionally designed themes</p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredThemesForCategory.map((theme) => {
                     const IconComponent = THEME_ICONS[theme.category as keyof typeof THEME_ICONS] || Monitor
                     const isSelected = selectedTheme === theme.id
-                    
+
                     return (
                       <div
                         key={theme.id}
                         onClick={() => handleThemeSelect(theme.id)}
-                        className={`relative border rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg group ${
-                          isSelected 
-                            ? 'border-blue-500 bg-blue-50 shadow-md' 
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
+                        className={`relative border rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg group ${isSelected
+                          ? 'border-blue-500 bg-blue-50 shadow-md'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                          }`}
                       >
                         {/* Premium Badge */}
                         {theme.isPremium && (
@@ -1372,28 +1370,28 @@ export default function EditCataloguePage() {
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Selected Badge */}
                         {isSelected && (
-                          <div className="absolute top-4 left-4">
+                          <div className="absolute top-4 right-4">
                             <div className="bg-blue-500 text-white rounded-full p-1.5">
                               <Check className="h-4 w-4" />
                             </div>
                           </div>
                         )}
-                        
+
                         <div className="space-y-4">
                           {/* Theme Icon */}
                           <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors">
                             <IconComponent className="h-6 w-6 text-gray-600" />
                           </div>
-                          
+
                           {/* Theme Info */}
                           <div>
                             <h4 className="font-semibold text-lg text-gray-900">{theme.name}</h4>
                             <p className="text-sm text-gray-600 mt-1">{theme.description}</p>
                           </div>
-                          
+
                           {/* Color Palette */}
                           <div>
                             <p className="text-xs font-medium text-gray-700 mb-2">Color Palette</p>
@@ -1408,7 +1406,7 @@ export default function EditCataloguePage() {
                               ))}
                             </div>
                           </div>
-                          
+
                           {/* Features */}
                           <div>
                             <p className="text-xs font-medium text-gray-700 mb-2">Features</p>
@@ -1431,7 +1429,7 @@ export default function EditCataloguePage() {
                     )
                   })}
                 </div>
-                
+
                 {filteredThemesForCategory.length === 0 && (
                   <div className="text-center py-12">
                     <div className="text-gray-400 mb-2">
