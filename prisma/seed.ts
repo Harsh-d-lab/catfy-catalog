@@ -77,6 +77,10 @@ async function main() {
 
   console.log('✅ Created additional coupons:', [welcomeCoupon.code, fixedCoupon.code])
 
+  // Skip sample data creation in production
+  console.log('ℹ️ Skipping sample catalogue and product creation')
+
+  /*
   // Create sample catalogue
   const sampleCatalogue = await prisma.catalogue.upsert({
     where: { slug: 'tech-gadgets-collection' },
@@ -91,21 +95,24 @@ async function main() {
       publishedAt: new Date(),
       profileId: testProfile.id,
       settings: {
-        brandColor: '#3B82F6',
-        logoUrl: null,
-        headerText: 'Tech Gadgets Collection',
-        footerText: 'Powered by CATFY',
-        showPrices: true,
-        showDescriptions: true,
-        layout: 'grid',
-        itemsPerRow: 3,
+        companyInfo: {
+          companyName: 'Tech Store',
+          companyDescription: 'Your trusted tech partner'
+        },
+        displaySettings: {
+          showPrices: true,
+          showCategories: true,
+          allowSearch: true,
+          showProductCodes: false
+        }
       },
     },
   })
 
-  console.log('✅ Created sample catalogue:', sampleCatalogue.name)
+  // console.log('✅ Created sample catalogue:', sampleCatalogue.name)
 
   // Create categories
+  /*
   const categories = await Promise.all([
     prisma.category.create({
       data: {
@@ -315,15 +322,12 @@ async function main() {
 
   console.log('✅ Created analytics events')
 
+  */
+
   console.log('🎉 Database seeded successfully!')
   console.log('\n📊 Summary:')
   console.log(`- Created 3 coupons (including FIRST100)`)
-  console.log(`- Created 1 catalogue: ${sampleCatalogue.name}`)
-  console.log(`- Created ${categories.length} categories`)
-  console.log(`- Created ${createdProducts.length} products`)
-  console.log(`- Created 1 test subscription`)
-  console.log(`- Created ${analyticsEvents.length} analytics events`)
-  console.log('\n🎫 Test coupon: FIRST100 (50% off yearly, 99/100 remaining)')
+  console.log('\n🎫 Test coupon: FIRST100 (50% off yearly, 100/100 remaining)')
 }
 
 main()

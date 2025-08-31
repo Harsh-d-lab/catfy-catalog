@@ -26,15 +26,15 @@ import {
 } from '@/components/ui/select'
 import { Header } from '@/components/Header'
 import { TeamManagement } from '@/components/TeamManagement'
-import { 
-  ArrowLeft, 
-  Save, 
-  Eye, 
-  Loader2, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Package, 
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  Loader2,
+  Plus,
+  Edit,
+  Trash2,
+  Package,
   FolderOpen,
   Settings,
   AlertTriangle,
@@ -130,7 +130,7 @@ export default function EditCataloguePage() {
   const params = useParams()
   const catalogueId = params.id as string
   const { currentPlan } = useSubscription()
-  
+
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -162,14 +162,14 @@ export default function EditCataloguePage() {
   const fetchCatalogue = async () => {
     try {
       setIsLoading(true)
-      
+
       const response = await fetch(`/api/catalogues/${catalogueId}`)
-      
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to fetch catalogue')
       }
-      
+
       const data = await response.json()
       setCatalogue(data.catalogue)
     } catch (error: any) {
@@ -182,16 +182,16 @@ export default function EditCataloguePage() {
 
   const saveCatalogue = async () => {
     console.log('saveCatalogue called, catalogue state:', catalogue)
-    
+
     if (!catalogue) {
       console.error('Catalogue is null or undefined')
       toast.error('Catalogue data not loaded. Please refresh the page.')
       return
     }
-    
+
     try {
       setIsSaving(true)
-      
+
       const requestData = {
         name: catalogue.name,
         description: catalogue.description,
@@ -199,10 +199,10 @@ export default function EditCataloguePage() {
         theme: catalogue.theme,
         settings: catalogue.settings
       }
-      
+
       console.log('Saving catalogue with data:', requestData)
       console.log('Settings being saved:', catalogue.settings)
-      
+
       const response = await fetch(`/api/catalogues/${catalogueId}`, {
         method: 'PUT',
         headers: {
@@ -210,14 +210,14 @@ export default function EditCataloguePage() {
         },
         body: JSON.stringify(requestData)
       })
-      
+
       const responseData = await response.json()
       console.log('API response:', responseData)
-      
+
       if (!response.ok) {
         throw new Error(responseData.error || 'Failed to save catalogue')
       }
-      
+
       toast.success('Catalogue saved successfully!')
       await fetchCatalogue()
     } catch (error: any) {
@@ -233,7 +233,7 @@ export default function EditCataloguePage() {
       setShowUpgradePrompt(true)
       return
     }
-    
+
     setEditingCategory(category || null)
     setCategoryForm({
       name: category?.name || '',
@@ -247,7 +247,7 @@ export default function EditCataloguePage() {
       setShowUpgradePrompt(true)
       return
     }
-    
+
     setEditingProduct(product || null)
     setProductForm({
       name: product?.name || '',
@@ -269,12 +269,12 @@ export default function EditCataloguePage() {
     }
 
     try {
-      const url = editingCategory 
+      const url = editingCategory
         ? `/api/catalogues/${catalogueId}/categories/${editingCategory.id}`
         : `/api/catalogues/${catalogueId}/categories`
-      
+
       const method = editingCategory ? 'PUT' : 'POST'
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -285,12 +285,12 @@ export default function EditCataloguePage() {
           description: categoryForm.description
         })
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to save category')
       }
-      
+
       toast.success(`Category ${editingCategory ? 'updated' : 'created'} successfully!`)
       setShowCategoryDialog(false)
       setCategoryForm({ name: '', description: '' })
@@ -309,12 +309,12 @@ export default function EditCataloguePage() {
     }
 
     try {
-      const url = editingProduct 
+      const url = editingProduct
         ? `/api/catalogues/${catalogueId}/products/${editingProduct.id}`
         : `/api/catalogues/${catalogueId}/products`
-      
+
       const method = editingProduct ? 'PUT' : 'POST'
-      
+
       const productData: any = {
         name: productForm.name,
         description: productForm.description,
@@ -324,15 +324,15 @@ export default function EditCataloguePage() {
         imageUrl: productForm.imageUrl || undefined,
         tags: productForm.tags
       }
-      
+
       // Only include categoryId if it's not empty
       if (productForm.categoryId && productForm.categoryId.trim() !== '') {
         productData.categoryId = productForm.categoryId
       }
-      
+
       console.log('Saving product with data:', productData)
       console.log('Product form state:', productForm)
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -340,18 +340,18 @@ export default function EditCataloguePage() {
         },
         body: JSON.stringify(productData)
       })
-      
+
       console.log('Response status:', response.status)
-      
+
       if (!response.ok) {
         const errorData = await response.json()
         console.log('Error response:', errorData)
         throw new Error(errorData.error || 'Failed to save product')
       }
-      
+
       const responseData = await response.json()
       console.log('Success response data:', responseData)
-      
+
       toast.success(`Product ${editingProduct ? 'updated' : 'created'} successfully!`)
       setShowProductDialog(false)
       setProductForm({
@@ -420,7 +420,7 @@ export default function EditCataloguePage() {
                 Back to Dashboard
               </Link>
             </Button>
-            
+
             <div className="flex flex-col">
               <h1 className="text-3xl font-bold text-gray-900 leading-tight">
                 {catalogue.name}
@@ -434,7 +434,7 @@ export default function EditCataloguePage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/catalogue/${catalogueId}/preview`}>
@@ -442,9 +442,9 @@ export default function EditCataloguePage() {
                 Preview
               </Link>
             </Button>
-            
-            
-            
+
+
+
             <Button onClick={saveCatalogue} disabled={isSaving}>
               {isSaving ? (
                 <>
@@ -492,7 +492,7 @@ export default function EditCataloguePage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -504,7 +504,7 @@ export default function EditCataloguePage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -518,7 +518,7 @@ export default function EditCataloguePage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -538,31 +538,67 @@ export default function EditCataloguePage() {
                 <CardTitle>Quick Actions</CardTitle>
                 <CardDescription>Common tasks for managing your catalogue</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button onClick={() => openCategoryDialog()} className="h-auto p-4 flex-col">
-                    <Plus className="h-6 w-6 mb-2" />
-                    <span className="font-medium">Add Category</span>
-                    <span className="text-xs opacity-75">Organize your products</span>
-                  </Button>
-                  
-                  <Button onClick={() => openProductDialog()} variant="outline" className="h-auto p-4 flex-col">
-                    <Package className="h-6 w-6 mb-2" />
-                    <span className="font-medium">Add Product</span>
-                    <span className="text-xs opacity-75">Expand your catalogue</span>
-                  </Button>
-                  
-                  <Button onClick={() => setShowEditDialog(true)} variant="outline" className="h-auto p-4 flex-col">
-                    <Edit className="h-6 w-6 mb-2" />
-                    <span className="font-medium">Edit Details</span>
-                    <span className="text-xs opacity-75">Update branding & info</span>
-                  </Button>
-                  
-                  <Button onClick={() => setShowSettingsDialog(true)} variant="outline" className="h-auto p-4 flex-col">
-                    <Settings className="h-6 w-6 mb-2" />
-                    <span className="font-medium">Edit Settings</span>
-                    <span className="text-xs opacity-75">Configure display options</span>
-                  </Button>
+              <CardContent className="p">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div
+                    onClick={() => openCategoryDialog()}
+                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                  >
+                    <div className="flex flex-row items-center justify-center text-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                        <Plus className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">Add Category</p>
+                        <p className="text-xs text-gray-600">Organize products</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => openProductDialog()}
+                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                  >
+                    <div className="flex flex-row justify-center items-center text-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                        <Package className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">Add Product</p>
+                        <p className="text-xs text-gray-600">Expand catalogue</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setShowEditDialog(true)}
+                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                  >
+                    <div className="flex flex-row justify-center items-center text-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                        <Edit className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">Edit Details</p>
+                        <p className="text-xs text-gray-600">Update branding</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setShowSettingsDialog(true)}
+                    className="group relative overflow-hidden rounded-lg border border-dashed border-gray-300 hover:border-gray-400 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md "
+                  >
+                    <div className="flex flex-row items-center text-center justify-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-500 text-white group-hover:bg-blue-600 transition-colors">
+                        <Settings className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">Edit Settings</p>
+                        <p className="text-xs text-gray-600">Display options</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -587,14 +623,18 @@ export default function EditCataloguePage() {
                 ) : (
                   <div className="space-y-3">
                     {catalogue.categories.slice(0, 3).map((category) => (
-                      <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">{category.name}</h4>
-                          <p className="text-sm text-gray-600">{category._count.products} products</p>
+                      <div className='grid grid-cols-4'>
+
+
+                        <div key={category.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <h4 className="font-medium">{category.name}</h4>
+                            <p className="text-sm text-gray-600">{category._count.products} products</p>
+                          </div>
+                          <Button onClick={() => openCategoryDialog(category)} variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button onClick={() => openCategoryDialog(category)} variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
                       </div>
                     ))}
                   </div>
@@ -664,8 +704,8 @@ export default function EditCataloguePage() {
                         <Badge variant="secondary">
                           {category._count.products} products
                         </Badge>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => {
                             setActiveTab('products')
@@ -718,11 +758,14 @@ export default function EditCataloguePage() {
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'flex';
+                            }
                           }}
                         />
                       ) : null}
-                      
+
                       {/* Fallback placeholder */}
                       <div className={`absolute inset-0 flex items-center justify-center bg-gray-100 ${product.imageUrl ? 'hidden' : 'flex'}`}>
                         <div className="text-center text-gray-400">
@@ -730,7 +773,7 @@ export default function EditCataloguePage() {
                           <p className="text-sm">No Image</p>
                         </div>
                       </div>
-                      
+
                       {/* Overlay actions */}
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <DropdownMenu>
@@ -752,7 +795,7 @@ export default function EditCataloguePage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      
+
                       {/* Status badge */}
                       <div className="absolute top-2 left-2">
                         <Badge variant={product.isActive ? 'default' : 'secondary'} className="bg-white/90 text-gray-800">
@@ -760,7 +803,7 @@ export default function EditCataloguePage() {
                         </Badge>
                       </div>
                     </div>
-                    
+
                     {/* Content Section */}
                     <div className="p-4 space-y-3">
                       {/* Title and Description */}
@@ -772,30 +815,32 @@ export default function EditCataloguePage() {
                           {product.description || 'No description available'}
                         </p>
                       </div>
-                      
-                      {/* Price */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-xl font-bold text-gray-900">
-                          {product.priceDisplay === 'show' && product.price ? (
-                            `$${Number(product.price).toFixed(2)}`
-                          ) : product.priceDisplay === 'contact' ? (
-                            <span className="text-blue-600 text-base font-medium">Contact for Price</span>
-                          ) : (
-                            <span className="text-gray-500 text-base font-medium">Price Hidden</span>
-                          )}
+
+                      <div className='flex justify-between'>
+                        {/* Price */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-xl font-bold text-gray-900">
+                            {product.priceDisplay === 'show' && product.price ? (
+                              `$${Number(product.price).toFixed(2)}`
+                            ) : product.priceDisplay === 'contact' ? (
+                              <span className="text-blue-600 text-base font-medium">Contact for Price</span>
+                            ) : (
+                              <span className="text-gray-500 text-base font-medium">Price Hidden</span>
+                            )}
+                          </div>
                         </div>
+
+                        {/* Category */}
+                        {product.categoryId && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Category:</span>
+                            <Badge variant="outline" className="text-xs">
+                              {catalogue.categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
+                            </Badge>
+                          </div>
+                        )}
                       </div>
-                      
-                      {/* Category */}
-                      {product.categoryId && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Category:</span>
-                          <Badge variant="outline" className="text-xs">
-                            {catalogue.categories.find(c => c.id === product.categoryId)?.name || 'Unknown'}
-                          </Badge>
-                        </div>
-                      )}
-                      
+
                       {/* Tags */}
                       {product.tags && product.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
@@ -838,7 +883,7 @@ export default function EditCataloguePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Team Management */}
             {catalogue && <TeamManagement catalogueId={catalogue.id} isOwner={true} />}
           </TabsContent>
@@ -855,7 +900,7 @@ export default function EditCataloguePage() {
                 {editingCategory ? 'Update category information' : 'Create a new category for your products'}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="categoryName">Category Name</Label>
@@ -866,7 +911,7 @@ export default function EditCataloguePage() {
                   placeholder="Enter category name"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="categoryDescription">Description</Label>
                 <Textarea
@@ -878,7 +923,7 @@ export default function EditCataloguePage() {
                 />
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowCategoryDialog(false)}>
                 Cancel
@@ -892,7 +937,7 @@ export default function EditCataloguePage() {
 
         {/* Product Dialog */}
         <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-          <DialogContent className="max-w-2xl overflow-auto h-full">
+          <DialogContent className="max-w-2xl overflow-auto h-full max-h-[95vh]">
             <DialogHeader>
               <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add Product'}
@@ -901,7 +946,7 @@ export default function EditCataloguePage() {
                 {editingProduct ? 'Update product information' : 'Add a new product to your catalogue'}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="productName">Product Name</Label>
@@ -912,7 +957,7 @@ export default function EditCataloguePage() {
                   placeholder="Enter product name"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="productDescription">Description</Label>
                 <div className="space-y-2">
@@ -923,11 +968,11 @@ export default function EditCataloguePage() {
                     placeholder="Enter product description"
                     rows={3}
                   />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="w-fit text-xs"
                     onClick={() => {
                       // Dummy AI generate functionality
                       const aiDescriptions = [
@@ -946,7 +991,7 @@ export default function EditCataloguePage() {
                   </Button>
                 </div>
               </div>
-              
+
               <div>
                 <Label className="text-sm font-medium mb-2 block">Product Image</Label>
                 {!productForm.imageUrl ? (
@@ -969,9 +1014,9 @@ export default function EditCataloguePage() {
                 ) : (
                   <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                     <p className="text-sm text-gray-600 mb-2">Current image:</p>
-                    <img 
-                      src={productForm.imageUrl} 
-                      alt="Product Image" 
+                    <img
+                      src={productForm.imageUrl}
+                      alt="Product Image"
                       className="w-20 h-20 object-cover border rounded"
                     />
                     <Button
@@ -986,7 +1031,7 @@ export default function EditCataloguePage() {
                   </div>
                 )}
               </div>
-              
+
               <div>
                 <Label htmlFor="productTags">Tags</Label>
                 <Input
@@ -999,7 +1044,7 @@ export default function EditCataloguePage() {
                   placeholder="Enter tags separated by commas (e.g., electronics, gadgets, premium)"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="productPrice">Price</Label>
@@ -1011,7 +1056,7 @@ export default function EditCataloguePage() {
                     placeholder="0.00"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="productPriceDisplay">Price Display</Label>
                   <Select
@@ -1029,30 +1074,29 @@ export default function EditCataloguePage() {
                   </Select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="productCategory">Category</Label>
                   <div className="flex items-center gap-2">
-                    <select
-                      id="productCategory"
-                      value={productForm.categoryId}
-                      onChange={(e) => setProductForm(prev => ({ ...prev, categoryId: e.target.value }))}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Enter category</option>
-                      {catalogue.categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={productForm.categoryId} onValueChange={(value) => setProductForm(prev => ({ ...prev, categoryId: value }))}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Enter category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {catalogue.categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Button type="button" variant="ghost" size="sm" className="text-xs">
                       Auto
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="productActive"
@@ -1063,7 +1107,7 @@ export default function EditCataloguePage() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowProductDialog(false)}>
                 Cancel
@@ -1084,12 +1128,12 @@ export default function EditCataloguePage() {
                 Configure display and visibility settings for your catalogue
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-6">
               {/* Display Settings */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Display Settings</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base font-medium">Show Prices</Label>
@@ -1109,7 +1153,7 @@ export default function EditCataloguePage() {
                     } : null)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base font-medium">Show Categories</Label>
@@ -1129,7 +1173,7 @@ export default function EditCataloguePage() {
                     } : null)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base font-medium">Allow Search</Label>
@@ -1149,7 +1193,7 @@ export default function EditCataloguePage() {
                     } : null)}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base font-medium">Show Product Codes</Label>
@@ -1170,11 +1214,11 @@ export default function EditCataloguePage() {
                   />
                 </div>
               </div>
-              
+
               {/* Visibility Settings */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Visibility Settings</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-base font-medium">Catalogue Visibility</Label>
@@ -1190,7 +1234,7 @@ export default function EditCataloguePage() {
                 </p>
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
                 Cancel
@@ -1214,7 +1258,7 @@ export default function EditCataloguePage() {
                 Update your catalogue branding and information
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
@@ -1228,7 +1272,7 @@ export default function EditCataloguePage() {
                     placeholder="Enter catalogue name"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="catalogueDescription">Description</Label>
                   <Textarea
@@ -1240,7 +1284,7 @@ export default function EditCataloguePage() {
                   />
                 </div>
               </div>
-              
+
               {/* Theme Selection */}
               <div>
                 <h3 className="text-lg font-medium mb-4">Theme</h3>
@@ -1255,11 +1299,10 @@ export default function EditCataloguePage() {
                   ].map((theme) => (
                     <div
                       key={theme.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        catalogue?.theme === theme.id
+                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${catalogue?.theme === theme.id
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                       onClick={() => setCatalogue(prev => prev ? { ...prev, theme: theme.id } : null)}
                     >
                       <h4 className="font-medium text-sm">{theme.name}</h4>
@@ -1303,9 +1346,9 @@ export default function EditCataloguePage() {
                     ) : (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                         <p className="text-sm text-gray-600 mb-2">Current logo:</p>
-                        <img 
-                          src={catalogue.settings.mediaAssets.logoUrl} 
-                          alt="Company Logo" 
+                        <img
+                          src={catalogue.settings.mediaAssets.logoUrl}
+                          alt="Company Logo"
                           className="w-20 h-20 object-contain border rounded"
                         />
                         <Button
@@ -1329,7 +1372,7 @@ export default function EditCataloguePage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium mb-2 block">Cover Image</Label>
                     {!catalogue?.settings?.mediaAssets?.coverImageUrl ? (
@@ -1360,9 +1403,9 @@ export default function EditCataloguePage() {
                     ) : (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
                         <p className="text-sm text-gray-600 mb-2">Current cover image:</p>
-                        <img 
-                          src={catalogue.settings.mediaAssets.coverImageUrl} 
-                          alt="Cover Image" 
+                        <img
+                          src={catalogue.settings.mediaAssets.coverImageUrl}
+                          alt="Cover Image"
                           className="w-full h-32 object-cover border rounded"
                         />
                         <Button
@@ -1401,9 +1444,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           companyInfo: {
-                            ...prev.settings?.companyInfo,
+                            ...(prev.settings?.companyInfo || {}),
                             companyName: e.target.value
                           }
                         }
@@ -1411,7 +1454,7 @@ export default function EditCataloguePage() {
                       placeholder="Enter your company name"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="companyDescription">Company Description</Label>
                     <Textarea
@@ -1420,9 +1463,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           companyInfo: {
-                            ...prev.settings?.companyInfo,
+                            ...(prev.settings?.companyInfo || {}),
                             companyDescription: e.target.value
                           }
                         }
@@ -1447,9 +1490,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           contactDetails: {
-                            ...prev.settings?.contactDetails,
+                            ...(prev.settings?.contactDetails || {}),
                             email: e.target.value
                           }
                         }
@@ -1457,7 +1500,7 @@ export default function EditCataloguePage() {
                       placeholder="contact@company.com"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="contactPhone">Phone</Label>
                     <Input
@@ -1466,9 +1509,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           contactDetails: {
-                            ...prev.settings?.contactDetails,
+                            ...(prev.settings?.contactDetails || {}),
                             phone: e.target.value
                           }
                         }
@@ -1476,7 +1519,7 @@ export default function EditCataloguePage() {
                       placeholder="+1 (555) 123-4567"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="contactWebsite">Website</Label>
                     <Input
@@ -1485,9 +1528,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           contactDetails: {
-                            ...prev.settings?.contactDetails,
+                            ...(prev.settings?.contactDetails || {}),
                             website: e.target.value
                           }
                         }
@@ -1510,9 +1553,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           socialMedia: {
-                            ...prev.settings?.socialMedia,
+                            ...(prev.settings?.socialMedia || {}),
                             facebook: e.target.value
                           }
                         }
@@ -1520,7 +1563,7 @@ export default function EditCataloguePage() {
                       placeholder="https://facebook.com/yourpage"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="socialTwitter">Twitter</Label>
                     <Input
@@ -1529,9 +1572,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           socialMedia: {
-                            ...prev.settings?.socialMedia,
+                            ...(prev.settings?.socialMedia || {}),
                             twitter: e.target.value
                           }
                         }
@@ -1539,7 +1582,7 @@ export default function EditCataloguePage() {
                       placeholder="https://twitter.com/yourhandle"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="socialInstagram">Instagram</Label>
                     <Input
@@ -1548,9 +1591,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           socialMedia: {
-                            ...prev.settings?.socialMedia,
+                            ...(prev.settings?.socialMedia || {}),
                             instagram: e.target.value
                           }
                         }
@@ -1558,7 +1601,7 @@ export default function EditCataloguePage() {
                       placeholder="https://instagram.com/yourhandle"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="socialLinkedin">LinkedIn</Label>
                     <Input
@@ -1567,9 +1610,9 @@ export default function EditCataloguePage() {
                       onChange={(e) => setCatalogue(prev => prev ? {
                         ...prev,
                         settings: {
-                          ...prev.settings,
+                          ...(prev.settings || {}),
                           socialMedia: {
-                            ...prev.settings?.socialMedia,
+                            ...(prev.settings?.socialMedia || {}),
                             linkedin: e.target.value
                           }
                         }
@@ -1580,7 +1623,7 @@ export default function EditCataloguePage() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>
                 Cancel
@@ -1594,8 +1637,8 @@ export default function EditCataloguePage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
-        <UpgradePrompt 
+
+        <UpgradePrompt
           isOpen={showUpgradePrompt}
           onClose={() => setShowUpgradePrompt(false)}
           feature="product and category management"

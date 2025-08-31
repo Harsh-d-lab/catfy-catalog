@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { InvitationStatus } from '@prisma/client'
 
 // DELETE /api/invitations/[id] - Cancel a pending invitation
 export async function DELETE(
@@ -15,7 +16,7 @@ export async function DELETE(
     const invitation = await prisma.invitation.findFirst({
       where: {
         id: invitationId,
-        status: 'PENDING',
+        status: InvitationStatus.PENDING,
         catalogue: {
           profileId: user.id
         }
@@ -41,8 +42,7 @@ export async function DELETE(
     await prisma.invitation.update({
       where: { id: invitationId },
       data: { 
-        status: 'CANCELLED',
-        cancelledAt: new Date()
+        status: InvitationStatus.DECLINED
       }
     })
 
@@ -78,7 +78,7 @@ export async function GET(
     const invitation = await prisma.invitation.findFirst({
       where: {
         token,
-        status: 'PENDING',
+        status: InvitationStatus.PENDING,
         expiresAt: {
           gt: new Date()
         }

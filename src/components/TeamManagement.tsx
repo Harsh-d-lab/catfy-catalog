@@ -78,9 +78,7 @@ export function TeamManagement({ catalogueId, isOwner }: TeamManagementProps) {
   const [inviteEmail, setInviteEmail] = useState('')
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
   const [emailError, setEmailError] = useState('')
-  const { subscription } = useSubscription()
-
-  const currentPlan = subscription?.plan || 'FREE'
+  const { currentPlan } = useSubscription()
   const maxTeamMembers = getMaxTeamMembers(currentPlan)
   const currentTeamCount = team.filter(member => member.role === 'MEMBER').length
   const canInvite = true // All plans now support team collaboration

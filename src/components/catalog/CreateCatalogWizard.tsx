@@ -36,6 +36,7 @@ import { UpgradePrompt } from '@/components/UpgradePrompt'
 import { ThemeSelector } from './ThemeSelector'
 
 interface CatalogueData {
+  id?: string
   name: string
   description: string
   theme: string
@@ -499,7 +500,7 @@ export function CreateCatalogWizard({ onComplete }: CreateCatalogWizardProps) {
                      {!data.settings.mediaAssets?.logoUrl ? (
                        <FileUpload
                          uploadType="catalogue"
-                         catalogueId={data.id}
+                         catalogueId={data.id || 'temp'}
                          onUpload={(results) => {
                            if (results.length > 0) {
                              updateData('settings.mediaAssets.logoUrl', results[0].url)
@@ -534,7 +535,7 @@ export function CreateCatalogWizard({ onComplete }: CreateCatalogWizardProps) {
                      {!data.settings.mediaAssets?.coverImageUrl ? (
                        <FileUpload
                          uploadType="catalogue"
-                         catalogueId={data.id}
+                         catalogueId={data.id || 'temp'}
                          onUpload={(results) => {
                            if (results.length > 0) {
                              updateData('settings.mediaAssets.coverImageUrl', results[0].url)

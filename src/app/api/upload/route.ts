@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { getUser, getUserProfile } from '@/lib/auth'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { SubscriptionStatus, AccountType } from '@prisma/client'
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
     const supabaseAdmin = createServiceRoleClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getUser()
 
     if (!user) {
       return NextResponse.json(
@@ -36,66 +37,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user profile, create if doesn't exist
-    let profile = await prisma.profile.findUnique({
-      where: { id: user.id },
-      select: { 
-        id: true, 
-        subscriptions: {
-          where: { status: SubscriptionStatus.ACTIVE },
-          select: { billingCycle: true, status: true }
-        }
-      }
-    })
-
-    // If profile doesn't exist, create it using upsert to prevent race conditions
-    if (!profile && user.email) {
-      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || ''
-      const firstName = fullName.split(' ')[0] || ''
-      const lastName = fullName.split(' ').slice(1).join(' ') || ''
-      
-      try {
-        profile = await prisma.profile.upsert({
-          where: { id: user.id },
-          update: {},
-          create: {
-            id: user.id,
-            email: user.email,
-            firstName,
-            lastName,
-            fullName: fullName || null,
-            accountType: 'INDIVIDUAL',
-          },
-          select: { 
-            id: true, 
-            subscriptions: {
-              where: { status: SubscriptionStatus.ACTIVE },
-              select: { billingCycle: true, status: true }
-            }
-          }
-        })
-      } catch (error) {
-        console.error('Failed to create profile in upload route:', error)
-        // Try to fetch the profile again in case another request created it
-        profile = await prisma.profile.findUnique({
-          where: { id: user.id },
-          select: { 
-            id: true, 
-            subscriptions: {
-              where: { status: SubscriptionStatus.ACTIVE },
-              select: { billingCycle: true, status: true }
-            }
-          }
-        })
-      }
-    }
-
+    const profile = await getUserProfile(user.id)
     if (!profile) {
       return NextResponse.json(
-        { error: 'Failed to create or find profile' },
-        { status: 500 }
+        { error: 'Profile not found' },
+        { status: 404 }
       )
     }
+
+
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
@@ -147,7 +97,16 @@ export async function POST(request: NextRequest) {
       const catalogue = await prisma.catalogue.findFirst({
         where: {
           id: validatedData.catalogueId,
-          profileId: profile.id
+          OR: [
+            { profileId: profile.id }, // User owns the catalogue
+            {
+              teamMembers: {
+                some: {
+                  profileId: profile.id
+                }
+              }
+            } // User is a team member
+          ]
         }
       })
 
@@ -164,7 +123,16 @@ export async function POST(request: NextRequest) {
         where: {
           id: validatedData.productId,
           catalogue: {
-            profileId: profile.id
+            OR: [
+              { profileId: profile.id }, // User owns the catalogue
+              {
+                teamMembers: {
+                  some: {
+                    profileId: profile.id
+                  }
+                }
+              } // User is a team member
+            ]
           }
         }
       })
@@ -265,6 +233,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createClient()
+    const supabaseAdmin = createServiceRoleClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
