@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const categories = existingCategories?.map(c => c.name).join(", ") || 
+    const categories = existingCategories?.map(c => c.name).join(", ") ||
       "Fashion, Health & Skin Care, FMCG, Interiors & Home Decor, Furniture";
 
     const prompt = `Given these categories: ${categories}
