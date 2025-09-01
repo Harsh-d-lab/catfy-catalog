@@ -22,18 +22,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = `Generate a short, engaging, and SEO-friendly product description (max 100 words) for:
+    const prompt = `Generate a short, engaging, and SEO-friendly product description (max 80 words) for:
       Product: ${productName}
       ${category ? `Category: ${category}` : ''}
       ${tags?.length ? `Tags: ${tags.join(', ')}` : ''}
       ${price ? `Price: $${price}` : ''}
       
-      Make it professional, engaging, and focused on key features and benefits.`;
+      Make it professional, engaging, and focused on key features and benefits.
+      Important: Return plain text only. Do not use markdown, asterisks (*), underscores (_), hashtags (#), or any other special formatting characters.`;
 
     let description = await generateWithGemini(prompt);
     
     // Clean and validate the generated description
-    description = description.trim();
+    description = description.trim().replace(/[*_#]/g, '');
     if (!description) {
       throw new Error('Generated description is empty');
     }
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       { 
         success: false, 
         error: "Failed to generate description",
-        description: '' // Add this to ensure consistent response format
+        description: '' // Ensure consistent response format
       },
       { status: 500 }
     );
@@ -76,7 +77,7 @@ function getApiStatus() {
 
 export async function GET() {
   // Health check endpoint
-  const apiStatus = getApiStatus()
+  const apiStatus = getApiStatus();
   
   return NextResponse.json({
     status: 'AI Description Generator API',
@@ -85,5 +86,5 @@ export async function GET() {
     endpoints: {
       generate: 'POST /api/ai/description'
     }
-  })
+  });
 }
