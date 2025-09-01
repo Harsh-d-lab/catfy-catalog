@@ -1,54 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-import type { Database } from '@/types/supabase'
 // import { formatDistanceToNow } from 'date-fns'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { FileUpload } from '@/components/ui/file-upload'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Header } from '@/components/Header'
 import { TeamManagement } from '@/components/TeamManagement'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  ArrowLeft,
-  Save,
-  Eye,
-  Loader2,
-  Plus,
-  Edit,
-  Trash2,
-  Package,
-  FolderOpen,
-  Settings,
-  AlertTriangle,
-  MoreVertical,
-  Upload,
-  Download,
-  Palette,
-  Check,
-  Crown,
-  Monitor,
-  Sparkles,
-  Zap,
-  Gem
-} from 'lucide-react'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,20 +25,47 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { FileUpload } from '@/components/ui/file-upload'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { toast } from 'sonner'
-import Link from 'next/link'
-import { useSubscription } from '@/contexts/SubscriptionContext'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 import { UpgradePrompt } from '@/components/UpgradePrompt'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import { smartSort } from '@/lib/sorting'
 import { SubscriptionPlan } from '@prisma/client'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Crown,
+  Edit,
+  Eye,
+  FolderOpen,
+  Gem,
+  Loader2,
+  Monitor,
+  MoreVertical,
+  Package,
+  Palette,
+  Plus,
+  Save,
+  Settings,
+  Sparkles,
+  Trash2,
+  Zap
+} from 'lucide-react'
+import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface Catalogue {
   id: string
@@ -135,7 +131,7 @@ interface Product {
 export default function EditCataloguePage() {
   const router = useRouter()
   const params = useParams()
-  const catalogueId = params.id as string
+  const catalogueId = params?.id as string || ''
   const { currentPlan } = useSubscription()
 
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null)
@@ -165,6 +161,8 @@ export default function EditCataloguePage() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   const [selectedThemeCategory, setSelectedThemeCategory] = useState('all')
   const [selectedTheme, setSelectedTheme] = useState('modern')
+  const [products, setProducts] = useState<Product[]>([])
+  const [smartSortEnabled, setSmartSortEnabled] = useState(false)
 
   // Theme data matching the themes page
   const THEMES = [
@@ -578,6 +576,71 @@ export default function EditCataloguePage() {
     } catch (error: any) {
       console.error('Error saving product:', error)
       toast.error(error.message || 'Failed to save product')
+    }
+  }
+
+  // AI Features
+  const handleGenerateDescription = async (product: Product) => {
+    setIsGeneratingDescription(true)
+
+    try {
+      const response = await fetch('/api/ai/description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: `${product.name} ${product.tags || ''}` }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.description) {
+        setProductForm(prev => ({ ...prev, description: data.description }))
+        toast.success('AI description generated successfully!')
+      } else {
+        throw new Error(data.error || 'Failed to generate description')
+      }
+    } catch (error) {
+      console.error('AI Generation Error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to generate description')
+    } finally {
+      setIsGeneratingDescription(false)
+    }
+  }
+
+  const handleSuggestCategory = async (product: Product) => {
+    try {
+      const response = await fetch('/api/ai/category', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: `${product.name} ${product.description || ''}` }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.category) {
+        setProductForm(prev => ({ ...prev, categoryId: data.category.id }))
+        toast.success('AI category suggestion applied!')
+      } else {
+        throw new Error(data.error || 'Failed to suggest category')
+      }
+    } catch (error) {
+      console.error('AI Suggestion Error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to suggest category')
+    }
+  }
+
+  const toggleSmartSort = () => {
+    setSmartSortEnabled(!smartSortEnabled)
+    if (!smartSortEnabled) {
+      // Use type assertion to ensure compatibility
+      setCatalogue(prev => {
+        if (!prev) return null;
+        const sortedProducts = smartSort(prev.products) as typeof prev.products;
+        return { ...prev, products: sortedProducts };
+      });
     }
   }
 
@@ -1677,7 +1740,7 @@ export default function EditCataloguePage() {
                   <div className="flex items-center gap-2">
                     <Select value={productForm.categoryId} onValueChange={(value) => setProductForm(prev => ({ ...prev, categoryId: value }))}>
                       <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Enter category" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
                         {catalogue.categories.map((category) => (
@@ -1687,10 +1750,57 @@ export default function EditCataloguePage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button type="button" variant="ghost" size="sm" className="text-xs">
-                      Auto
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      disabled={!productForm.name || !productForm.description}
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/ai/category', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              text: `${productForm.name} ${productForm.description}`,
+                              existingCategories: catalogue.categories
+                            }),
+                          });
+
+                          const data = await response.json();
+
+                          if (data.success && data.category) {
+                            setProductForm(prev => ({ 
+                              ...prev, 
+                              categoryId: data.category.id 
+                            }));
+                            toast.success('Category suggested successfully!');
+                          } else {
+                            throw new Error(data.error || 'Failed to suggest category');
+                          }
+                        } catch (error) {
+                          console.error('AI Category Suggestion Error:', error);
+                          toast.error(error instanceof Error ? error.message : 'Failed to suggest category');
+                        }
+                      }}
+                    >
+                      {isGeneratingDescription ? (
+                        <>
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          Suggesting...
+                        </>
+                      ) : (
+                        <>
+                          🤖 Suggest Category
+                        </>
+                      )}
                     </Button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter product name and description first for better category suggestions
+                  </p>
                 </div>
 
                 <div className="flex items-center space-x-2">

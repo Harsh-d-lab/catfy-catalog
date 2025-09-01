@@ -1,14 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createPrompt } from '@/lib/ai/prompts'
-import { generateDescription, getApiStatus } from '@/lib/ai/huggingface'
+import { NextRequest, NextResponse } from "next/server";
+
+interface RequestBody {
+  productName: string;
+  category?: string;
+  tags?: string[];
+  price?: number;
+}
 
 export async function POST(request: NextRequest) {
   const DEBUG = process.env.NODE_ENV === 'development';
   
   try {
-    const body = await request.json()
-    const { productName, category, tags, price } = body
-    
+    const body: RequestBody = await request.json();
+    const { productName, category, tags, price } = body;
+
     if (DEBUG) {
       console.log('🚀 AI Description API called with:', {
         productName,
@@ -35,27 +40,63 @@ export async function POST(request: NextRequest) {
     const sanitizedPrice = typeof price === 'number' && price > 0 ? price : undefined
 
     // Create the prompt
-    const prompt = createPrompt(sanitizedName, sanitizedCategory, sanitizedTags, sanitizedPrice)
+    const prompt = `Write a short, engaging product description (max 100 words) for:
+      Product: ${sanitizedName}
+      ${sanitizedCategory ? `Category: ${sanitizedCategory}` : ''}
+      ${sanitizedTags.length ? `Tags: ${sanitizedTags.join(', ')}` : ''}
+      ${sanitizedPrice ? `Price: $${sanitizedPrice}` : ''}`;
 
     if (DEBUG) {
       console.log('📝 Generated prompt:', prompt);
     }
 
     // Generate description using AI
-    const description = await generateDescription(
-      prompt, 
-      sanitizedName, 
-      sanitizedCategory
-    )
+    const response = await fetch(process.env.FREE_AI_API_URL!, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional product description writer. Write concise, SEO-friendly descriptions."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const description = data.choices?.[0]?.message?.content?.trim();
+
+    if (!description) {
+      throw new Error("No description generated");
+    }
     
     if (DEBUG) {
       console.log('✅ Final description:', description);
     }
 
     // Get API status for debugging
-    const apiStatus = getApiStatus()
-
-    return NextResponse.json({
+        const apiStatus = {
+          env: process.env.NODE_ENV,
+          timestamp: new Date().toISOString(),
+          aiProvider: 'OpenAI'
+        }
+    
+        return NextResponse.json({
       success: true,
       description,
       metadata: {
@@ -86,6 +127,14 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function getApiStatus() {
+  return {
+    env: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+    aiProvider: 'OpenAI'
+  };
 }
 
 export async function GET() {
