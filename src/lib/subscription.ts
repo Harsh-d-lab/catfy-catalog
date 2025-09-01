@@ -157,8 +157,8 @@ export function getPlanFeatures(plan: SubscriptionPlan) {
 }
 
 export function canCreateCatalogue(plan: SubscriptionPlan, currentCount: number, userEmail?: string): boolean {
-  // Admin users have unlimited access
-  if (userEmail === 'admin@catfy.com' || userEmail === 'test@catfy.com') {
+  // Admin user has unlimited access
+  if (userEmail === 'admin@catfy.com') {
     return true
   }
   
@@ -167,8 +167,8 @@ export function canCreateCatalogue(plan: SubscriptionPlan, currentCount: number,
 }
 
 export function canAddProduct(plan: SubscriptionPlan, currentCount: number, userEmail?: string): boolean {
-  // Admin users have unlimited access
-  if (userEmail === 'admin@catfy.com' || userEmail === 'test@catfy.com') {
+  // Admin user has unlimited access
+  if (userEmail === 'admin@catfy.com') {
     return true
   }
   
@@ -177,8 +177,8 @@ export function canAddProduct(plan: SubscriptionPlan, currentCount: number, user
 }
 
 export function canAddCategory(plan: SubscriptionPlan, currentCount: number, userEmail?: string): boolean {
-  // Admin users have unlimited access
-  if (userEmail === 'admin@catfy.com' || userEmail === 'test@catfy.com') {
+  // Admin user has unlimited access
+  if (userEmail === 'admin@catfy.com') {
     return true
   }
   

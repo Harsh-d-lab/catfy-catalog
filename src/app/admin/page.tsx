@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isClientAdmin } from '@/lib/client-auth'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -54,6 +56,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { ThemeAnalytics } from '@/components/admin/ThemeAnalytics'
 
 interface AdminStats {
   totalUsers: number
@@ -140,22 +143,6 @@ export default function AdminDashboard() {
 
   const checkAdminAccess = async () => {
     try {
-      // Check for admin session cookie first
-      const adminSession = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('admin-session='))
-        ?.split('=')[1]
-      
-      const testUserBypass = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('test-user-bypass='))
-        ?.split('=')[1]
-      
-      if (adminSession === 'admin@catfy.com' || testUserBypass === 'test@catfy.com') {
-        setIsLoading(false)
-        return
-      }
-
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
@@ -163,21 +150,16 @@ export default function AdminDashboard() {
         return
       }
 
-      // Check if user is admin
-      const response = await fetch('/api/auth/profile')
-      if (response.ok) {
-        const data = await response.json()
-        const adminEmails = ['admin@catfy.com', 'test@catfy.com']
-        const isAdmin = adminEmails.includes(data.profile.email) || data.profile.email?.includes('admin')
-        
-        if (!isAdmin) {
-          router.push('/dashboard')
-          return
-        }
+      // Check if user is admin using client-side function
+      const adminCheck = await isClientAdmin()
+      
+      if (!adminCheck) {
+        router.push('/dashboard')
+        return
       }
     } catch (error) {
       console.error('Failed to check admin access:', error)
-      router.push('/dashboard')
+      router.push('/admin/login')
     } finally {
       setIsLoading(false)
     }
@@ -325,8 +307,8 @@ export default function AdminDashboard() {
     return (
       <>
         <Header title="Admin" />
-        <div className="min-h-screen bg-gray-50">
-          <div className="container mx-auto py-8 px-4">
+        <div className="min-h-screen bg-white">
+        <div className="container mx-auto py-8 px-4">
           <div className="space-y-6">
             <Skeleton className="h-8 w-64" />
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -344,7 +326,7 @@ export default function AdminDashboard() {
   return (
     <>
       <Header title="Admin" />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6">
@@ -365,11 +347,12 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto py-8 px-4">
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="catalogues">Catalogues</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="themes">Theme Analytics</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -379,54 +362,62 @@ export default function AdminDashboard() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                      <p className="text-xs text-muted-foreground">
-                        {stats.freeUsers} free, {stats.paidUsers} paid
-                      </p>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Total Users</p>
+                          <p className="text-2xl font-bold">{stats.totalUsers}</p>
+                          <p className="text-xs text-gray-500">
+                            {stats.freeUsers} free, {stats.paidUsers} paid
+                          </p>
+                        </div>
+                        <Users className="h-8 w-8 text-blue-600" />
+                      </div>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Catalogues</CardTitle>
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{stats.totalCatalogues}</div>
-                      <p className="text-xs text-muted-foreground">
-                        {stats.totalExports} total exports
-                      </p>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Total Catalogues</p>
+                          <p className="text-2xl font-bold">{stats.totalCatalogues}</p>
+                          <p className="text-xs text-gray-500">
+                            {stats.totalExports} total exports
+                          </p>
+                        </div>
+                        <FileText className="h-8 w-8 text-green-600" />
+                      </div>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">
-                        {stats.activeSubscriptions} active subscriptions
-                      </p>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                          <p className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">
+                            {stats.activeSubscriptions} active subscriptions
+                          </p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-purple-600" />
+                      </div>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Monthly Growth</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">+{stats.monthlyGrowth}%</div>
-                      <p className="text-xs text-muted-foreground">
-                        Compared to last month
-                      </p>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Monthly Growth</p>
+                          <p className="text-2xl font-bold">+{stats.monthlyGrowth}%</p>
+                          <p className="text-xs text-gray-500">
+                            Compared to last month
+                          </p>
+                        </div>
+                        <TrendingUp className="h-8 w-8 text-orange-600" />
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -743,6 +734,11 @@ export default function AdminDashboard() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Theme Analytics Tab */}
+          <TabsContent value="themes" className="space-y-6">
+            <ThemeAnalytics />
           </TabsContent>
         </Tabs>
       </div>

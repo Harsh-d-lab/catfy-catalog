@@ -24,10 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isTestUser, setIsTestUser] = useState(false)
 
   useEffect(() => {
-    // Clear any existing test user bypass cookies to prevent interference
-    document.cookie = 'test-user-bypass=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-    document.cookie = 'admin-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-
     // Regular Supabase auth
     const getUser = async () => {
       try {

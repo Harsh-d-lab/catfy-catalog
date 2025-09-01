@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { sendInvitationAcceptedNotification } from '@/lib/email'
 import { canAddTeamMember, getMaxTeamMembers } from '@/lib/subscription'
 import { SubscriptionPlan } from '@prisma/client'
+import type { User } from '@supabase/supabase-js'
 
 // POST /api/invitations/accept - Accept a team invitation
 export async function POST(request: NextRequest) {
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the invitation email matches the current user's email
-    if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+    if (invitation.email.toLowerCase() !== (user as User).email?.toLowerCase()) {
       return NextResponse.json(
         { error: 'This invitation was sent to a different email address' },
         { status: 403 }
@@ -172,8 +173,8 @@ export async function POST(request: NextRequest) {
       await sendInvitationAcceptedNotification({
         ownerName: invitation.catalogue.profile.fullName || invitation.catalogue.profile.firstName || 'Catalogue Owner',
         ownerEmail: invitation.catalogue.profile.email,
-        memberName: user.fullName || user.firstName || user.email,
-        memberEmail: user.email,
+        memberName: (user as User).email || 'Team Member',
+        memberEmail: (user as User).email || '',
         catalogueName: invitation.catalogue.name
       })
     } catch (emailError) {

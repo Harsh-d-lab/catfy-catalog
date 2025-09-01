@@ -34,6 +34,7 @@ model Profile {
   teamMemberships  TeamMember[]
   sentInvitations  Invitation[]   @relation("InvitationSender")
   receivedInvitations Invitation[] @relation("InvitationReceiver")
+  themeAnalytics   ThemeAnalytics[]
 
   @@map("profiles")
 }
@@ -63,6 +64,7 @@ model Catalogue {
   products       Product[]
   teamMembers    TeamMember[]
   invitations    Invitation[]
+  themeAnalytics ThemeAnalytics[]
 
   @@map("catalogues")
 }
@@ -289,6 +291,21 @@ model Invitation {
 
   @@unique([catalogueId, email])
   @@map("invitations")
+}
+
+model ThemeAnalytics {
+  id          String    @id @default(uuid())
+  themeId     String
+  themeName   String
+  catalogueId String
+  profileId   String
+  selectedAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  catalogue   Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("theme_analytics")
 }
 
 enum AccountType {

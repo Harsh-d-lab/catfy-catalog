@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { ADMIN_EMAILS } from '@/lib/admin-config'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -10,27 +9,17 @@ export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for admin session cookies first
-    const cookieStore = cookies()
-    const adminSession = cookieStore.get('admin-session')?.value
-    const testUserBypass = cookieStore.get('test-user-bypass')?.value
+    // Authenticate user via Supabase
+    const supabase = createRouteHandlerClient({ cookies })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    // Allow access if admin session cookie is present
-    if (adminSession === 'admin@catfy.com' || testUserBypass === 'test@catfy.com') {
-      // Admin access granted via cookie
-    } else {
-      // Fallback to Supabase authentication
-      const supabase = createRouteHandlerClient({ cookies })
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      
-      if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-      // Check if user is admin
-      if (!ADMIN_EMAILS.includes(user.email || '')) {
-        return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
-      }
+    // Check if user is admin - only admin@catfy.com is allowed
+    if (user.email !== 'admin@catfy.com') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 
     // Get current date for monthly calculations

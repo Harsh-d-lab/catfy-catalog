@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { signOut, isClientAdmin } from '@/lib/client-auth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -41,6 +42,7 @@ interface UserProfile {
 export function Header({ title, showBackButton = false, backHref = '/dashboard' }: HeaderProps) {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -48,39 +50,19 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
   useEffect(() => {
     const getUser = async () => {
       try {
-        // Check for admin session first
-        const adminSession = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('admin-session='))
-          ?.split('=')[1]
-        
-        if (adminSession === 'admin@catfy.com') {
-          // Set admin user data
-          setUser({ 
-            id: 'admin-profile-id', 
-            email: 'admin@catfy.com',
-            user_metadata: { full_name: 'Admin User' }
-          })
-          setProfile({
-            id: 'admin-profile-id',
-            email: 'admin@catfy.com',
-            fullName: 'Admin User',
-            avatarUrl: null,
-            subscriptionPlan: 'unlimited'
-          })
-          setIsLoading(false)
-          return
-        }
-        
         const { data: { user } } = await supabase.auth.getUser()
         setUser(user)
         
         if (user) {
+          // Check if user is admin
+          const adminStatus = await isClientAdmin()
+          setIsAdmin(adminStatus)
+          
           // Fetch user profile
           const response = await fetch('/api/auth/profile')
           if (response.ok) {
-            const profileData = await response.json()
-            setProfile(profileData)
+            const data = await response.json()
+            setProfile(data.profile)
           }
         }
       } catch (error) {
@@ -95,23 +77,15 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
 
   const handleSignOut = async () => {
     try {
-      // Check if this is an admin session
-      const adminSession = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('admin-session='))
-        ?.split('=')[1]
-      
-      if (adminSession === 'admin@catfy.com') {
-        // Clear admin session cookie
-        document.cookie = 'admin-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-        router.push('/admin/login')
-        toast.success('Admin signed out successfully')
-        return
-      }
-      
-      await supabase.auth.signOut()
-      router.push('/auth/login')
+      await signOut()
       toast.success('Signed out successfully')
+      
+      // Redirect based on user type
+      if (isAdmin) {
+        window.location.href = '/admin/login'
+      } else {
+        window.location.href = '/auth/login'
+      }
     } catch (error) {
       console.error('Error signing out:', error)
       toast.error('Error signing out')
@@ -164,7 +138,7 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
           <div className="flex items-center space-x-4">
             {showBackButton && (
               <Button variant="ghost" size="sm" asChild>
-                <Link href={backHref}>
+                <Link href={isAdmin ? '/admin' : backHref}>
                   ←
                 </Link>
               </Button>
@@ -206,7 +180,13 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="cursor-pointer">
+                  <Link href="/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={isAdmin ? '/admin' : '/dashboard'} className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
@@ -231,7 +211,7 @@ export function Header({ title, showBackButton = false, backHref = '/dashboard' 
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/docs" className="cursor-pointer">
+                  <Link href="/documentation" className="cursor-pointer">
                     <FileText className="mr-2 h-4 w-4" />
                     <span>Documentation</span>
                   </Link>
